@@ -1,0 +1,895 @@
+{
+  "__type__": "PrimitiveResult",
+  "__value__": {
+    "pub_results": [
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4G4gAjkWKEDWHEEKE9oKE1jLQxmxGDRJPC9BSRDsFUxojGIGAQGR5GMZiRSCNoFmk4DCbbPmyxxEiJgfiswZKJ8CgmQhFJrsRQjKNcwBvHpIYLKeqJVwt2IlblxAYu9RMoFhMpK18wEyVeReSV6EhcRtxymArIsgKnPMm+wJL6ySxScTmJGJOw5hSSg4n8sgsARCscQQ=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4GGgNGYiRwKhosAJsDB9LRjGBIqp5RMOAAIxKIjRVGEtWSpxOHEdQGZIcCbWynm4mDIgtSyRGDwi8DDYZgIKA5GQCTkxwM"
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4GZMDIQARgJFrlAIBB4S6qOQKnQYyUWjEowomKgBz/MOLh0QVgt5IEhwxULA631IMEaOe14RJojKR6Zch7nCoeoHUokGk+AItUHAo="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJydVbtOAzEQ3Gn5iusOpCsIokB8AF0QDQUVisghCkTQBWiAr+CHuUR369mHiYSlnOy1vTPr2d38XN8ub+4gH/LZrvvtw9BeNu3X+6LtmvZxM7wNq5f7zbDud/ar1fO2H+3bp9VrP66Pz07PL7pmcdI1383/xpEIRKbP9KWJGmiDbIA7490AxT7OQfcgkvjfmUDz4JtckXfLgWEqzj3xw8OwgkZQ3gCQ8CIOhpd+bgJkXIrOyVKWqAXjFTIHkWkwOWNK4UTOny8WrDwqSyYEyNLl6QCL46SODj10QXbZAvq5dPdS7tMgfRyzKI5rIh001O2hBMXSV9zcpzKEykH1wyCgd4J7pgKjNfDXyDpGKiA0QkkQlZnOTD5NPcJedoznEqCITX3k4mbdxmaRKSwCBNwh/xSWp2ZOUcchg2/F9GSGyq9Q9o3T8ndRV/oAXY0c85F2ldlk6w52xxhDj7CEqlSMRCx9pFUrWNMravlu0kdFxbxjki6+pcyVJrymMivbTrNIp/xHMZP9+AVIDx1G"
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4GBGBkoCNgpLp1jJg8RuzCOLn0BgNsPWFAEwfiMRRvZBFjADUcga6MOKXoqgZB0iLWCWQ5lSr+o24g4TQNmwSxYhRaTbkhpBtNQlJkxMKkWSjQtsQnwgLa58mBy0pkWgsA1dUcHw=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS6GoQ0YgRCFOwgBRY5iJEU7hTYNJkCia0h3PO28y4jbdEY0m0lLvESlBUYMBhUAybFBw+hjJFEHZeFAvVDEYhIjxaYzksKlHsBqMC7bGIlQg9sgQjoY8WS3YQuo518AyH4cHw=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJydVLtOw0AQ3G35CncGKQVBFIgPoAPRUFChiBhRIEAO0ABfwQ8TJzePNR2RLMd3t7Nzs7P7c3VzeX2b8RGf/XrY3I/9edd/vS/7Rdc/vIxv4+r57mVcD9P6xeppM2zXN4+r12H7fXhyfHq26JZHi+67+9/vIDNy+0R7cvrY/Z1ebT12T+73cGLabgd35wIB2NwfaEEOge1kHmBFtBXGtMjYByFDW09LB9LBV4TlrfGNB3ISCVdHhiRwgHCDBQSp4hE694LHC9WSh/QIQ0yQDbtj6nLUMj2EwlIjqk0wVldKSvQM3YKwoJnUX4ZQVYo1wDPrOx1EiprUunnTnBzklCAjI0ol6a1wslFMTnMRwpwuSB5HsVxCJWcFpRoti1xqLFZS6d23IkTTsB3lHR6xOBlLwjGK/GBIVReKz/rSItykOE8QqzobRfStfqkPOgjKskLsEeZjJUyHYh25VjrQ4CWz8WHF1V+e2Cqpvg0jVxpLepVbcAoVzDpIaClLl5UObzJPxagQKSUXWfuMGUgYEHqc3W6eorXVSIUHJhLMmL5mtjCrEMo0/dPxNv1mxjMvYBqSj7MwY5somFU2uNgvdKcKEb7Ci5QZUu8ndShPzHZYb3eE9YZGjeSo5K0SGgC26r62hpv+/AJMniBk"
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4GkgAjVZSQZxEug0m1kJEMPSh2YWjGaRojCps6IYPXGkZs4ozYZfFpwa4ev0E4tRFhEwWAOHMYsTLpYjUe3dgMYMRnKm450jyIK8WgKSHbg8RqxKuOaNvxJlpSAAkhR0QIDgwg5Bx6OhczsCgwhDSjcJdVuKsWgmYTVdAPLQAAOPwcMQ=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4GCGBkwAEYCciTBAibwoiXCxGhjluw2MKIRQynQ4gwjwg+I05FeMWJFQQJMaJHIXabCPkQmzwjXgWEgoGgrWRGNPnpA4dOAiFHtFHkOYwRi05sKZZ2ADWaGXHL4RHHk7cIaSUfUKXwok8Yk2A/WplBTOokXMzQAeDNXXRwF8ECilg5ktXRzYs47cbJBQBmbRw7"
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJydVDtOxEAMfdNyinQBKQWLKBAHoFu0DQUVitggCsSiBGgWTsGFWcTM+DP2JDDFRPb48/xs5+v6Zr25DXjHvt0O0/3YXjbtx9uq7Zr2YTe+jv3z3W7cDj/6q/5pGg766bF/GQ7y8dnp+UXXrE665rP53zkKtYN0w1B75rNvAISi4obSAL8X5rOBBBjPQswOhI3FANhdTSxQw6ENwawsOUUIIPzgtfgZMzioZFSVZL5ODDgNyL6gmAkitD8KxDCQEweiX9G6AnP26HieOlcle4PcQQOvm2AZyMidJjJqEASpcRaiMSKtSP1ADETowQvh+HWndDFLwBtDCO5c7mmhlQZqAIwYxoJUg7LIvokX1NFBfbT1DHWSNS5RYJu5WajGABa9MVou8xbpxB/DmfEyDZOSK/Js0xMNDNxanMWtHPfn8mf36iiTJN+zCkas3AaNyCcgpK1ntsvX1JkatWJR/AaiyCLX"
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4GIGBkQABkNn5BwrL4tVGmGqSeVB0wjTB9jBj2EvAoIyPxVjLiMxGn2zGdhKmAEasCAi5DcznZgUcQMCL7nChL8CU5RgLKsOvDEk14dZMSFvhTOyOxqYqgldi8QH5wEg0I5QBitCJHGrYIJJjICdlEUDelAHv+IioeGfHKkmAhNfxInmOINBhvEUa0KWRYTCdAdG5DV8iIhYXTPEa8sni1UEMxAMKZHE8="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4GHIARiYRR2NUQI4FTJRmq4EphjsOljRGVzciAzQZG3FwSnEOUHmLMY8TKxKIMV5TgizFMv5LsRXLCBLsxBE0iMxFRqgWnRiqFFZlOgqZeaMQTn/OINRuFiz/bY+hG5CwSsg/ZLiUYNcRYTHReJFhi4NKI4GFN7IyoHOwKGNEFSABUyqk4DMWIaEZMNWgC1E2zDDgTAzY3kW0+8WoYiSnUiElNwPTCiFy94deA30bCGRkAtK0cWw=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJytVD1vwjAQfVn5Fd7cShmgYkD9Ad2oWBiYUFSCGKpSJZQF+BX8YUBKiH1fDhW3JPa9e757vvP5cz6dLTLscfCrsv6q/Lvzx7+Rz51fb6tdVfwst9WqvO1/FN91ed2vN8VveV2/vA3Hk9yNXnN3cv+zQSYblH3DCcWDZpf7LB5ABdKwlh5kzU43igL5cgBsTWisXluKAA8Bm8QglYCMuFTmu9qgp0OKsPmUaP4j4jNewYOGTkKoh3Zo3DW0r5j1MbvvRI+1XqIPENYrtHqIEASi8EA0pmxKUN0XZ6Dl0+TbRcndFv3GxfS5blKWMHeMBUHiAsQYXaO/JTE1Jq0uziH0V/J1knhl7RMZ98BTLx9nY+StK+7x8D3FSDI0SWWsW28w6LQPOybjiUv3V3yywmTMQErCCH8B8ucjKg=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJyb7BfqGxDJyFDGUK2eklqcXKRupaBeU2qorqOgnpZfVFKUmBefX5SSChJ3S8wpTgWKF2ckFqQC+RpGBiYWOgqGmjoKtQrkAS4GKGCEkoxQFozCBdClGRFCWKSIBIyYLEZssjitIspsmFsZ0cUR8oxgRB7A0EiyQTg0YHUpaUZgqmJE5aLJY4sGZAFGMnxHlhZijUVyMKYtjBhcRqzq8GmiFkBNfCRZgpEPiMuxcD141ZHvXczQJUcbnmxJ0ATiw4HYoEJTiSXosOcQ9IIM7jLCFpMeATRKodgsILJkQiRrSIjR3IU4AfbqA8ElNeMRVI9SCCGJ4swdGAkIuy1YkhdJ9QG2sg8EAP/VHGY="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJy1Vb0OgjAQ5lafols1YRDjYHwAN42Lg5MhUuNg1BR1UZ/CFxZJgLZc2yvEG0h7/e7/h89qs1xvIXpET56JfC/5nPHXPeEx44eLvMn0vLvITPz4i/SUi4KfH9OrKO7DyXg6i1kyitmbdaNBVBFE/6VCP0Bz1s1CgyG4AiUOKjjBNqgmrFLQ8J0wGxeac/ds9pM0IvAoNJOvvZCCUK0g1fUI203YdQAWGlYud/WsrRhE0PrSZMC4ICXwDoHpQX3ySGoRt+BaRHpgvTeEdbxrLtK+pnRQV9q1KXzq5AKxJF4QngCqEjNHfZYNhQBrEO3k3jBB3lF6DXlruWjf0crctEYozDNziAk/DGVanU2AA1Cchg6SKekLgYYcig=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJydVLtOA0EMnG35iusOpBQEUSA+gA5EQ0GFInKIAhF0ARrgK/hhksvaM/YGCi7R7Z69fo3H+311c3l9W/COj345rO/H/rzrP9/m/azrH1bj67h4vluNy2Erv1g8rYeNfP24eBk234cnx6dns25+NOu+uv89BwUFKGVaps12N/2m7VY5bUv9bl6FNiqrEohhjVCd7gxQw1dx0Oco8D9EBcbTxXWehtVnhyBO6SZW8ccDwww1Ww+oUNiOUGiCnl+CcJcpQhYZYHfrDdLKebLxotmy+XY22oONBMElpAqaOBLSeH/bAoRoPASW5elKMLD9hhGgS1H7UEwtXRqeodS6fRgCF5hDwJvJ56gZDppFyT7ChcAo+w+VxnXSNuxiYYn7mgnqvCRqudNgwsGVrugswCWJstIsyHxC0d9D+yYRJWOxgLUCv2LIE7fwOugAUYmsS/2POvBEmArL1e89Pa5MF7YDctqk7j8Et0R9uouMiCADebsMPmJhy5ERY3nYdw0Vg/3Kap2BMEqpIUJZ0jETQm847rXlhmAEtIQSlesCMxoYOErFmhr8eeGZiSlHhFiGp6fgK29oqV52nmVqtunozksBzX4A6D4hlA=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJylVTsOwjAMzVs5RbaA1AEQA+IAbCAWBiZUQREDAtQCC3AKLgxIfJLGdl3wENWO7fdiO+ltPB1NZjAnc3bLrFjkbmDd5dhxiXWrXX7I0+18ly+zp32YborsYS/W6T576M1uu9dPbKeV2Kv9TRrGGJiXfD488TZBWKVQSfBd2FBVzrrA7yBE4Si78IA1KKNkV6JoqCGyVRTDYxGdgiyJrxG5QSPqW0LnpBUhK1gqnoMyF+cgXhIpRyUwSFWeDIHfRwHpp50RxYhrK1EuXf0MJDyLwI5QFXRElAeLgBCttURqFP7Ia6SOIj5yEPXaBwIT9zAJ/wTW7afnQ1OGALE0A0Sr5Kny1KBelUfhydGXnjQG5ZbfOZYaH3MHXlMchw=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJydVTsOwjAMjVdOkS0gdQDEgDgAG4iFgQlVUMSAALXAApyCC1MQbZ3EdlIyNIr9/P/0NV/OFitQN3U326zY5GaizeM6MIk2u1N+ydPj+pRvsw99mh6KrKQX+/Scle/usD8aJ3rQS/RT/3c6qjqgnAOIBACfjwux4e7DpwhvWS+EhECRMCIoXgO4BEbKZ7B8zzXKLpEtCvX1EBCyEsPhgmogUJNcE8HkY9EginHWhrWo+A/cCs+hGT11N0OFAZsb0iuAnejDhwQHU09Mo9X3NZ/PjPMICPiSLaKUukRSww4h6wutjaySh44pNoA30EyHCTR5lfKuMGlUqJERubHi+yxbtoOTfIn2MyZoWjcxjvXVrDdOu90YwR9CY4CrIDb6vaL6gbNK7Roqs1EFpIP5bTqUCIR7A+i+HKg="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJydVDFOw0AQ3Gl5hTuD5IIgCsQD6IJoKKiQRYwoEEE20ACv4MOE+HZ29pwKR8rZd3u7szNz93N9u765g33YZ7sZpoexvWzar/dV2zXt43Z8G/uX++24Gf7mr/rnadjNT0/967D7Pj47Pb/omtVJ13w3/3uOrDwof9gPAPYf4JL5hM7N0YhRFuafSdp5RBotReVXyJSEOgQHzkS+uYA3diE7OSb8c8NW9gEAty0ek/SK18EW2kqSwljBlndEYc2ACl9JRi4QDZvG+mwQKSwhaCJnpRO4zpBg5TelhyZxksg2EtKQzt3kO8AVR6aILIJZXQkRrpVWYVIL5+qSLUoCIXQ0I7UEYehE7fQRqyf+yBBcdSnKlTCOQmJomU2JvEWYxhFyEj47jXD1BDlhGp+EzuIKIPG+GCupFwqJurW/THJwv7IdpLN9VTu9sCxR0Y4JRWaAxxSpdZ1idH3MauMeNAeCkTCWkB/+TYexyikelbMpV5dmiMB0mWgF1xeV6pDkFe2ZKHISTuRlKn4P6ir6pAvpdMFW2JMgUGsBWUodRhMHDirv6kBXMUXtQ4PkIYWmZ1Vdbzww2gt3u0KkHTXWMMCirUihIQjGM0GwX1wbHvo="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJytVb0OgjAQ7q0+RbdqwqDGwfgAbhoXBydDFONg1IC6qE/hC4sBhPa+Q368QFqud1+P777Ca76cLVakbuputkG0Cc1Em8d1YDxtdqfwEvrH9SncBh//1D9EQeyP9v45iJ+7w/5o7OlBz9NP3cw6qmikWhoHaAVJhXRK7s9VEROFNS+H7JGs4lKfWBmBGU9PXRiGYI6bC9BRIoARmfn9TqIRm9QycknHD+jVWLcqbaNScWV3nuySC3qXj5SPZbHJmhDEi8QOUByOt6giV7x2p+RiSvhkmDyvjuxkw6oiy10CW1qELDR7Y37eMreMSnANOKCEi4tuF4B6BAKq0k3i/jIg0IZAlJiB1VfxiKCa6kZ+qZdVUk/E/IPA/xqs+fRd+a+Bk/MGn7Iclg=="
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      },
+      {
+        "__type__": "SamplerPubResult",
+        "__value__": {
+          "data": {
+            "__type__": "DataBin",
+            "__value__": {
+              "field_names": [
+                "c"
+              ],
+              "field_types": [
+                "<class 'qiskit.primitives.containers.bit_array.BitArray'>"
+              ],
+              "shape": [],
+              "fields": {
+                "c": {
+                  "__type__": "BitArray",
+                  "__value__": {
+                    "array": {
+                      "__type__": "ndarray",
+                      "__value__": "eJydVDsOwjAMrVdOkS0gdaCIAXEANhALAxOqoIgBAWqBBTgFF6YfUZzEdlI8VI3t2M/2i9+L1Xy5hugePfQuK7a5nir9vCU6Vnp/zq95etqc811W6WfpschKfXFIL1l57o+G40mskkGsXuo/6UW1QPMFfGp/0REJ0GrGG6nB0MJXB4w7G9F2D3DjQVEpiYDQIHb6BAgBeU3MziFnHcD+rbO7YZDR0tDjoCG0gRE/2gaxLWw9+QSUJXyK9ryY8kleIYvZmdCEvJGHUnbCaYYQMwgYLpF4SuA4+cW4jRnEjssoGWwMFAXIlxLSX/jV4nlUJp5Oy+HHWmGveNDKzEeeXbcbsXuoHxDA/7EpO9xmdpFzXZqfDd1LDSD6IWZn2kbn9JTM0DvIteYK8AytrPKO9aWU5QMLlhyj"
+                    },
+                    "num_bits": 1
+                  }
+                }
+              }
+            }
+          },
+          "metadata": {
+            "circuit_metadata": {}
+          }
+        }
+      }
+    ],
+    "metadata": {
+      "execution": {
+        "execution_spans": {
+          "__type__": "ExecutionSpans",
+          "__value__": {
+            "spans": [
+              {
+                "__type__": "DoubleSliceSpan",
+                "__value__": {
+                  "start": {
+                    "__type__": "datetime",
+                    "__value__": "2026-09-23T00:38:06.772167"
+                  },
+                  "stop": {
+                    "__type__": "datetime",
+                    "__value__": "2026-09-23T00:38:19.568703"
+                  },
+                  "data_slices": {
+                    "0": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "1": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "2": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "3": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "4": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "5": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "6": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "7": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "8": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "9": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "10": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "11": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "12": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "13": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "14": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "15": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "16": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "17": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "18": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "19": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ],
+                    "20": [
+                      [
+                        2048
+                      ],
+                      0,
+                      1,
+                      0,
+                      2048
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "version": 2
+    }
+  }
+}
