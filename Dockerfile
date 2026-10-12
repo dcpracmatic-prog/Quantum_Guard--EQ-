@@ -6,22 +6,16 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY pyproject.toml requirements.txt README.md ./
+COPY requirements.txt pyproject.toml README.md ./
 COPY src/ ./src/
 COPY main.py ./main.py
+
 RUN python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt \
     && python -m pip install --no-deps -e . \
-    && apt-get purge -y --auto-remove gcc \
-    && rm -rf /root/.cache/pip
+    && python -m py_compile main.py \
+    && mkdir -p /app/outputs
 
-RUN mkdir -p /app/outputs
 VOLUME ["/app/outputs"]
-
 ENTRYPOINT ["python", "main.py"]
-CMD ["--mode", "sim"]
+CMD ["--mode", "sim", "--smoke", "--output-dir", "/app/outputs/eqg_ablation"]

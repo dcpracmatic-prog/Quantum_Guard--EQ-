@@ -1,4 +1,4 @@
-name: Docker build and Centinela smoke test
+name: EQG full pipeline Docker smoke test
 
 on:
   push:
@@ -9,23 +9,34 @@ permissions:
   contents: read
 
 jobs:
-  docker-smoke:
+  docker-eqg:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Build image
+      - name: Build complete EQG image
         run: docker build -t eqg-centinela:latest .
-      - name: Run local simulation
+      - name: Run full-stack local simulation (A/C/D/E)
         run: |
-          mkdir -p outputs
-          docker run --rm \
-            -v "$GITHUB_WORKSPACE/outputs:/app/outputs" \
-            eqg-centinela:latest \
-            --mode sim --candidates 2 --shots 32 --shots-cal 64
-      - name: Verify artifacts
+          mkdir -p "$GITHUB_WORKSPACE/outputs"
+          docker run --rm -v "$GITHUB_WORKSPACE/outputs:/app/outputs" eqg-centinela:latest \
+            --mode sim --smoke --output-dir /app/outputs/eqg_ablation
+      - name: Verify outputs and all preregistered contrasts
         run: |
-          test -s outputs/centinela/probe_raw.json
-          test -s outputs/centinela/report.json
-          test -s outputs/centinela/summary.txt
+          test -s outputs/eqg_ablation/report.json
+          test -s outputs/eqg_ablation/ablation.png
+          test -s outputs/eqg_ablation/run_manifest.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("outputs/eqg_ablation")
+          report = json.loads((p / "report.json").read_text())
+          manifest = json.loads((p / "run_manifest.json").read_text())
+          expected = {"C-A", "D-C", "E-C", "E-D", "E-A"}
+          got = {x["contrast"] for x in report["contrasts"]}
+          assert expected <= got, (expected, got)
+          assert manifest["completed"] is True, manifest
+          assert set("ACDE") <= set(report["stats"]), report["stats"].keys()
+          print("EQG_SMOKE_TEST_OK", sorted(got), "backend=", manifest["backend"])
+          PY

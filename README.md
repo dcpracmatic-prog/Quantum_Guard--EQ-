@@ -126,3 +126,35 @@ El contenido original de primera parte de este repositorio —código, documenta
 ## Citación
 
 Si utilizas el código o los resultados en un trabajo académico o técnico, se agradece citar el repositorio y al autor. Para interpretar los hallazgos, conserva también el protocolo, los identificadores de jobs y los límites descritos en los informes.
+
+
+## Ejecución del EQG completo (no solo DD-QPU)
+
+El punto de entrada main.py reproduce el flujo de ablación de cuatro brazos del notebook EQG: A (layout ingenuo), C (MORPH por calibración), D (MORPH + DD forzado) y E (EQG adaptativo completo). Integra Ojos/AOM, Reflejos/MORPH, Juicio causal, Manos/DD, carga QAOA MaxCut (N=8, p=2), snapshots PRE/POST, límites de presupuesto y contrastes preregistrados.
+
+### Simulación local en Docker
+
+```bash
+docker build -t eqg-centinela:latest .
+docker run --rm -v "$PWD/outputs:/app/outputs" eqg-centinela:latest \
+  --mode sim --smoke --output-dir /app/outputs/eqg_ablation
+```
+
+El smoke test reduce shots y repeticiones, pero conserva los cuatro brazos y genera report.json, ablation.png y run_manifest.json. GitHub Actions construye la imagen y comprueba los cinco contrastes C-A, D-C, E-C, E-D y E-A.
+
+### Conexión al catálogo IBM Quantum
+
+```bash
+export IBM_QUANTUM_TOKEN="..."
+docker run --rm --env IBM_QUANTUM_TOKEN eqg-centinela:latest --list-backends
+```
+
+Para ejecutar el experimento en hardware, selecciona un backend disponible y confirma explícitamente el gasto de QPU:
+
+```bash
+docker run --rm --env IBM_QUANTUM_TOKEN -v "$PWD/outputs:/app/outputs" eqg-centinela:latest \
+  --mode hardware --backend ibm_kingston --confirm-spend \
+  --output-dir /app/outputs/eqg_ablation
+```
+
+El token se lee del entorno y no se guarda en el repositorio ni en la imagen. La simulación es el modo predeterminado; no envía trabajos a IBM.
