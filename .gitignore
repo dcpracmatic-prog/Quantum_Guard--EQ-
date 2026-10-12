@@ -4,3 +4,5 @@ ddqpu_run/
 .ipynb_checkpoints/
 *.egg-info/
 .pytest_cache/
+# IBM Quantum analytics exports can contain account/user identifiers and instance CRNs.
+**/ibm_usage_analytics/

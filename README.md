@@ -89,6 +89,8 @@ Se publican **exclusivamente con fines de reproducibilidad científica**.
 El uso de estos datos está sujeto a los términos de servicio y políticas de IBM Quantum.  
 Este repositorio no está afiliado ni respaldado por IBM.
 
+Además, las exportaciones de analítica de uso de IBM Quantum (`ibm_usage_analytics/`) se mantienen fuera del control de versiones porque pueden contener IBMid, correo electrónico, identificadores de cuenta o CRN de instancia. El campo `user_id` de la evidencia de job incluida en este repositorio se ha eliminado; se conservan los datos técnicos restantes.
+
 ## Licencia y copyright
 
 Copyright (c) 2026 **Arturo Salvador Balderas Hernández**
