@@ -30,11 +30,14 @@ src/ddqpu/                  # Paquete principal (única fuente de verdad)
   sentinel.py               # Centinela: sondeo, bitácora, decisión y corrección de fase
 docs/
   producto_centinela.md     # Descripción pública de Centinela y resultados experimentales
+  eqg/reports/               # Informes técnicos y plan de reproducibilidad EQG
 notebooks/
   dd_validacion_v4.ipynb    # Notebook principal autocontenido (Kaggle / QPU)
   centinela_preflight.ipynb # Notebook de Centinela
   ejemplo_sim_fakefez.ipynb # Control negativo en simulador
   ejemplo_centinela_sim.ipynb
+  eqg/                       # Notebooks EQG recibidos sin modificar
+  eqg/safe/                  # Copias con simulación por defecto y bloqueo explícito de QPU
 scripts/
   analyze_v4_runs.py        # Análisis de estados de las corridas v4
   reanalyze_previous.py     # Reanálisis de corridas v1–v3 sin gastar cola
@@ -95,8 +98,7 @@ Además, las exportaciones de analítica de uso de IBM Quantum (`ibm_usage_analy
 
 Copyright (c) 2026 **Arturo Salvador Balderas Hernández**
 
-Este proyecto se distribuye bajo la licencia **MIT**.  
-Consulta el archivo [`LICENSE`](LICENSE) para el texto completo.
+El contenido original de primera parte de este repositorio —código, documentación, notebooks, informes y resultados— se distribuye bajo **Elastic License 2.0 (ELv2)**. Consulta [`LICENSE`](LICENSE) y el [alcance y las excepciones](docs/licensing-scope.md). Los componentes y materiales de terceros conservan sus licencias y términos propios; en particular, la evidencia de IBM Quantum sigue sujeta a los términos descritos arriba. Este cambio no altera las condiciones de copias o versiones que ya se hubieran distribuido bajo una licencia anterior.
 
 ## Citación
 
