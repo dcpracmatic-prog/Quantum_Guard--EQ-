@@ -1,0 +1,31 @@
+name: Docker build and Centinela smoke test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t eqg-centinela:latest .
+      - name: Run local simulation
+        run: |
+          mkdir -p outputs
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE/outputs:/app/outputs" \
+            eqg-centinela:latest \
+            --mode sim --candidates 2 --shots 32 --shots-cal 64
+      - name: Verify artifacts
+        run: |
+          test -s outputs/centinela/probe_raw.json
+          test -s outputs/centinela/report.json
+          test -s outputs/centinela/summary.txt
