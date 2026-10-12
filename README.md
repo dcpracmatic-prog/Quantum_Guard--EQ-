@@ -37,7 +37,7 @@ notebooks/
   ejemplo_sim_fakefez.ipynb # Control negativo en simulador
   ejemplo_centinela_sim.ipynb
   eqg/                       # Notebooks EQG recibidos sin modificar
-  eqg/safe/                  # Copias con simulación por defecto y bloqueo explícito de QPU
+  eqg/safe/                  # Copias con simulación por defecto, bloqueo QPU y sin instalaciones automáticas
 scripts/
   analyze_v4_runs.py        # Análisis de estados de las corridas v4
   reanalyze_previous.py     # Reanálisis de corridas v1–v3 sin gastar cola
