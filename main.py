@@ -389,15 +389,24 @@ _job_log, _SIM = [], {}
 
 def get_backend():
     if MODE == "sim":
-        from qiskit_ibm_runtime.fake_provider import FakeFez
-        return FakeFez()
+        # Backend local de 8 qubits: evita expandir circuitos a los 156 wires de FakeFez
+        # y permite que la prueba de integración corra en CPU/RAM modestos.
+        from qiskit.providers.fake_provider import GenericBackendV2
+        from qiskit.transpiler import CouplingMap
+        return GenericBackendV2(
+            num_qubits=N_QAOA,
+            basis_gates=["id", "rz", "sx", "x", "cx", "reset", "measure"],
+            coupling_map=CouplingMap.from_line(N_QAOA),
+            seed=SEED,
+            dt=1e-9,
+        )
     from qiskit_ibm_runtime import QiskitRuntimeService
     tok = os.environ.get("IBM_QUANTUM_TOKEN") or os.environ.get("QISKIT_IBM_TOKEN")
     if not tok:
-        from kaggle_secrets import UserSecretsClient
-        tok = UserSecretsClient().get_secret("IBM_QUANTUM_TOKEN")
+        raise RuntimeError("Falta IBM_QUANTUM_TOKEN o QISKIT_IBM_TOKEN.")
     try:
-        svc = QiskitRuntimeService(channel="ibm_cloud", token=tok.strip(), instance="open-instance")
+        svc = QiskitRuntimeService(channel="ibm_cloud", token=tok.strip(),
+                                  instance=os.getenv("IBM_QUANTUM_INSTANCE", "open-instance"))
     except Exception:
         svc = QiskitRuntimeService(token=tok.strip())
     return svc.backend(BACKEND_NAME)
@@ -422,7 +431,7 @@ def execute_pubs(tcs, shots_list, label):
     if MODE == "sim":
         from qiskit_aer import AerSimulator
         if "sim" not in _SIM:
-            _SIM["sim"] = AerSimulator.from_backend(backend)
+            _SIM["sim"] = AerSimulator()
         counts = [_SIM["sim"].run(tc, shots=int(s)).result().get_counts() for tc, s in zip(tcs, shots_list)]
         u, real = est, False; jid = "sim-" + label
     else:

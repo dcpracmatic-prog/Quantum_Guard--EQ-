@@ -1,5 +1,9 @@
 name: EQG full pipeline Docker smoke test
 
+concurrency:
+  group: eqg-docker-smoke
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
