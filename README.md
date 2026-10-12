@@ -1,3 +1,4 @@
+[![EQG full pipeline Docker smoke test](https://github.com/dcpracmatic-prog/Edge_Quantum-_Guard_EQG/actions/workflows/docker-smoke.yml/badge.svg)](https://github.com/dcpracmatic-prog/Edge_Quantum-_Guard_EQG/actions/workflows/docker-smoke.yml)
 # Edge Quantum Guard (EQG)
 
 **Edge Quantum Guard (EQG)** es una capa de control de bajo nivel entre una carga cuántica y el backend. Combina selección de layout, medición de salud, intervención condicional con dynamical decoupling (DD) y evaluación causal del resultado.
