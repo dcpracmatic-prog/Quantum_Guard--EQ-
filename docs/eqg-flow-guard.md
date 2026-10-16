@@ -2,7 +2,7 @@
 
 ## Alcance
 
-El guardián adapta el detector de duplicación de egress (EgressLink) a un protocolo EQG de eventos y canales. Vigila las transiciones de estado, el propietario y el identificador de corrida, secuencia monotónica, nonces anti-replay, canales autorizados, límites de tamaño y hashes de artefactos. El registro no almacena payloads ni claves.
+El guardián adapta el detector de duplicación de egress (EgressLink) a un protocolo EQG de eventos y canales. La ruta de ejecución usa send() como compuerta lógica antes de llamadas al simulador/backend y antes de escribir artefactos privados. Vigila las transiciones de estado, el propietario y el identificador de corrida, secuencia monotónica, nonces anti-replay, canales autorizados, límites de tamaño y hashes de artefactos. El registro no almacena payloads ni claves.
 
 Estados: INIT → PRECHECK → AUTHORIZED → RUNNING → VERIFYING → PACKAGED; las anomalías llevan a QUARANTINED y los errores operativos pueden llevar a REJECTED. No existe una transición de recuperación silenciosa desde estados terminales.
 

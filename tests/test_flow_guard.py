@@ -84,6 +84,24 @@ def test_private_egress_budget_quarantines_and_logs_no_payload():
     assert event["payload_sha3_256"] == sha3_256(b"secret-benchmark-payload")
 
 
+def test_send_records_authorized_channel_without_payload():
+    g = _guard()
+    payload = b"private request"
+    event = g.send("eqg->backend", "job_request", payload)
+    assert event["payload_sha3_256"] == sha3_256(payload)
+    meter = g.channel_meters["eqg->backend"]
+    assert meter.delivered_bytes == len(payload)
+    assert "private request" not in repr(g.snapshot())
+
+
+def test_send_blocks_unauthorized_channel_before_forwarding():
+    g = _guard()
+    with pytest.raises(GuardViolation, match="canal bloqueado"):
+        g.send("eqg->external-spy", "exfiltration", b"private results")
+    assert g.state == "QUARANTINED"
+    assert g.channel_meters["eqg->external-spy"].delivered_bytes == 0
+
+
 def test_artifact_hash_detects_mutation():
     g = _guard()
     payload = b"manifest bytes"
