@@ -79,7 +79,8 @@ def test_private_egress_budget_quarantines_and_logs_no_payload():
     assert meter.state == "QUARANTINED"
     assert meter.delivered_bytes == 0
     event = meter.audit_events[0]
-    assert "payload" not in event
+    assert "payload_bytes" not in event
+    assert "secret-benchmark-payload" not in repr(event)
     assert event["payload_sha3_256"] == sha3_256(b"secret-benchmark-payload")
 
 

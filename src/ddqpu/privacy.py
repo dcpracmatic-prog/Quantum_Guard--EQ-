@@ -167,11 +167,10 @@ def _cli() -> int:
     dec.add_argument("--input", required=True, help="Archivo .eqg.enc")
     dec.add_argument("--key-file", required=True, help="Clave privada de esa corrida")
     dec.add_argument("--output", required=True, help="Destino privado para el contenido descifrado")
-    dec.add_argument("--requester-id", default=local_owner_id())
     args = parser.parse_args()
     if args.command == "decrypt":
         plaintext = decrypt_artifact(
-            Path(args.input).read_bytes(), args.key_file, requester_id=args.requester_id
+            Path(args.input).read_bytes(), args.key_file, requester_id=local_owner_id()
         )
         target = Path(args.output)
         target.parent.mkdir(parents=True, exist_ok=True)

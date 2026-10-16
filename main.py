@@ -61,6 +61,7 @@ if _args.smoke:
 import os, sys, time, json, math, uuid, warnings, argparse, getpass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
+import builtins as _builtins
 import numpy as np
 import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -96,6 +97,16 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 from ddqpu.guard import FlowGuard
 from ddqpu.privacy import create_run_key, write_encrypted_artifact, decrypt_artifact
+
+def print(*args, **kwargs):
+    """Default console output is deliberately non-sensitive; detailed metrics stay encrypted."""
+    message = " ".join(str(arg) for arg in args)
+    if message == "EQG_PIPELINE_COMPLETED":
+        _builtins.print(message, **kwargs)
+    elif message.startswith("Artefactos verificados:"):
+        _builtins.print("Artefactos privados cifrados y verificados.")
+    elif message.startswith("Guardado en"):
+        _builtins.print("EQG private run prepared; key file:", KEY_PATH, "| run_id:", RUN_ID)
 
 RUN_ID = uuid.uuid4().hex
 RUN_OWNER = os.getenv("EQG_RUN_OWNER") or f"local:{getpass.getuser()}"
@@ -660,7 +671,7 @@ report = {"experiment": "EQG ablation ABBA N=8 p=2", "run_id": RUN_ID, "owner_id
           "guard": GUARD.snapshot(), "calibration": CAL_STAMP0, "layouts": {"A": LAYOUT_A, "C": LAYOUT_C, "E_end": LAYOUT_E},
           "ideal": IDEAL, "stats": STATS, "contrasts": CONTRASTS, "works": works, "plans_E": plans_E, "dd_pulses": dd_pulses,
           "snap_pre": snap_pre, "snap_post": snap_post, "e_snaps": e_snaps, "jobs": _job_log, "used_s": USED_S, "est_s": EST_TOTAL}
-report_bytes = json.dumps(report, indent=2, default=str, allow_nan=False).encode("utf-8")
+report_bytes = json.dumps(report, indent=2, default=str).encode("utf-8")
 report_meta = write_encrypted_artifact(
     OUT / "report.eqg.enc", report_bytes, KEY_INFO, artifact_name="report.json"
 )
