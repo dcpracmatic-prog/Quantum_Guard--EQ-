@@ -58,9 +58,10 @@ if _args.smoke:
         "EQG_HARD_CAP_S": "24.0", "EQG_QPU_REMAINING_S": "40.0"
     })
 
-import os, sys, time, json, math, uuid, warnings, argparse
+import os, sys, time, json, math, uuid, warnings, argparse, getpass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
+import builtins as _builtins
 import numpy as np
 import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -94,6 +95,32 @@ JOB_TIMEOUT_S = 1800
 OUT = Path(os.getenv("EQG_OUTPUT_DIR", "outputs/eqg_ablation"))
 OUT.mkdir(parents=True, exist_ok=True)
 
+from ddqpu.guard import FlowGuard
+from ddqpu.privacy import create_run_key, write_encrypted_artifact, decrypt_artifact
+
+def print(*args, **kwargs):
+    """Default console output is deliberately non-sensitive; detailed metrics stay encrypted."""
+    message = " ".join(str(arg) for arg in args)
+    if message == "EQG_PIPELINE_COMPLETED":
+        _builtins.print(message, **kwargs)
+    elif message.startswith("Artefactos verificados:"):
+        _builtins.print("Artefactos privados cifrados y verificados.")
+    elif message.startswith("Guardado en"):
+        _builtins.print("EQG private run prepared; key file:", KEY_PATH, "| run_id:", RUN_ID)
+
+RUN_ID = uuid.uuid4().hex
+RUN_OWNER = os.getenv("EQG_RUN_OWNER") or f"local:{getpass.getuser()}"
+KEY_PATH = Path(os.getenv("EQG_KEY_OUTPUT", str(OUT.parent / f"{RUN_ID}.key")))
+_legacy_plaintext = [OUT / "report.json", OUT / "ablation.png"]
+if any(p.exists() for p in _legacy_plaintext):
+    raise RuntimeError(
+        "Se detectaron artefactos EQG antiguos en claro. Muévelos a almacenamiento privado "
+        "o elimínalos antes de ejecutar esta versión: " +
+        ", ".join(str(p) for p in _legacy_plaintext if p.exists())
+    )
+GUARD = FlowGuard(RUN_ID, RUN_OWNER, allow_community_publication=False)
+GUARD.transition("PRECHECK", reason="validar política y preparar clave por corrida")
+
 def est_job_s(shots):
     return OVERHEAD_S + sum(shots) * T_SHOT_S
 
@@ -105,6 +132,14 @@ EST_TOTAL = EST_PRE + len(BLOCK_ORDERS) * EST_BLOCK + EST_POST
 print("Estimado: PRE %.2f + %d x bloque %.2f + POST %.2f = %.2f s  (tope %.1f s, quedan %.0f s)" % (
     EST_PRE, len(BLOCK_ORDERS), EST_BLOCK, EST_POST, EST_TOTAL, HARD_CAP_S, QPU_REMAINING_S))
 assert EST_TOTAL <= HARD_CAP_S, "El plan excede el tope"
+
+KEY_INFO = create_run_key(RUN_ID, RUN_OWNER, KEY_PATH)
+GUARD.send(
+    "eqg->owner", "run_key_issued",
+    json.dumps({"run_id": RUN_ID, "key_id": KEY_INFO["key_id"]}, sort_keys=True).encode(),
+    visibility="private",
+)
+GUARD.transition("AUTHORIZED", reason="presupuesto aprobado y clave exclusiva creada")
 
 
 def _try(fn, default=None):
@@ -425,6 +460,14 @@ def execute_pubs(tcs, shots_list, label):
     """Un job con lista de PUBs. Aplica el tope duro ANTES de lanzar."""
     global USED_S
     est = est_job_s(shots_list)
+    if GUARD.state == "AUTHORIZED":
+        GUARD.transition("RUNNING", reason="primer trabajo aprobado por el guardián")
+    request_bytes = json.dumps({
+        "label": label, "mode": MODE, "backend": BACKEND_NAME,
+        "shots": [int(x) for x in shots_list], "circuit_count": len(tcs),
+    }, sort_keys=True).encode("utf-8")
+    GUARD.send("eqg->simulator" if MODE == "sim" else "eqg->backend",
+               "job_request", request_bytes, visibility="private")
     if USED_S + est > HARD_CAP_S:
         raise RuntimeError("Tope duro: %.2f usados + %.2f estimados > %.1f s. No se lanza %s" % (USED_S, est, HARD_CAP_S, label))
     t0 = time.time()
@@ -468,6 +511,9 @@ def execute_pubs(tcs, shots_list, label):
             counts.append(c or {})
         u, real = _job_usage(job)
         if u is None: u, real = est, False
+    result_bytes = json.dumps(counts, sort_keys=True, default=str).encode("utf-8")
+    GUARD.send("simulator->eqg" if MODE == "sim" else "backend->eqg",
+               "job_result", result_bytes, visibility="private")
     USED_S += float(u)
     info = {"label": label, "job_id": jid, "usage_s": float(u), "usage_real": real, "est_s": est, "used_acum_s": USED_S}
     _job_log.append(info)
@@ -621,10 +667,18 @@ print("\nCuenta QPU: usada=%.2f s (reportada IBM en %d/%d jobs) | estimada=%.2f 
     USED_S, sum(j["usage_real"] for j in _job_log), len(_job_log), EST_TOTAL, HARD_CAP_S, QPU_REMAINING_S - USED_S))
 
 
-report = {"experiment": "EQG ablation ABBA N=8 p=2", "calibration": CAL_STAMP0, "layouts": {"A": LAYOUT_A, "C": LAYOUT_C, "E_end": LAYOUT_E},
+GUARD.transition("VERIFYING", reason="ejecución finalizada; validar artefactos y cifrar resultados")
+report = {"experiment": "EQG ablation ABBA N=8 p=2", "run_id": RUN_ID, "owner_id": RUN_OWNER,
+          "guard": GUARD.snapshot(), "calibration": CAL_STAMP0, "layouts": {"A": LAYOUT_A, "C": LAYOUT_C, "E_end": LAYOUT_E},
           "ideal": IDEAL, "stats": STATS, "contrasts": CONTRASTS, "works": works, "plans_E": plans_E, "dd_pulses": dd_pulses,
           "snap_pre": snap_pre, "snap_post": snap_post, "e_snaps": e_snaps, "jobs": _job_log, "used_s": USED_S, "est_s": EST_TOTAL}
-(OUT / "report.json").write_text(json.dumps(report, indent=2, default=str))
+report_bytes = json.dumps(report, indent=2, default=str).encode("utf-8")
+report_meta = write_encrypted_artifact(
+    OUT / "report.eqg.enc", report_bytes, KEY_INFO, artifact_name="report.json"
+)
+if decrypt_artifact((OUT / "report.eqg.enc").read_bytes(), KEY_PATH, requester_id=RUN_OWNER) != report_bytes:
+    raise RuntimeError("Falló la verificación independiente de ida y vuelta del reporte cifrado")
+GUARD.send("eqg->private-store", "encrypted_report", (OUT / "report.eqg.enc").read_bytes(), visibility="private")
 col = {"A": "#c0392b", "C": "#e67e22", "D": "#16a085", "E": "#2980b9"}
 fig, ax = plt.subplots(1, 2, figsize=(13, 4.5))
 for k, a in enumerate("ACDE"):
@@ -636,25 +690,32 @@ ax[0].axhline(IDEAL["ar"], color="gray", ls="--"); ax[0].set_xticks(range(4)); a
 ax[0].set_ylabel("AR"); ax[0].set_title("AR por brazo (puntos = replicas)")
 ax[1].barh([c["contrast"] for c in CONTRASTS], [c["delta"] for c in CONTRASTS], xerr=[2 * c["se"] for c in CONTRASTS], color="#7f8c8d")
 ax[1].axvline(0, color="k"); ax[1].set_xlabel("delta AR (barra = 2 SE de shots)"); ax[1].set_title("Contrastes")
-plt.tight_layout(); fig.savefig(OUT / "ablation.png", dpi=140, bbox_inches="tight"); plt.show()
-print("Guardado en", OUT)
+plt.tight_layout(); plot_tmp = OUT / ".ablation.private.tmp.png"
+fig.savefig(plot_tmp, dpi=140, bbox_inches="tight")
+plot_bytes = plot_tmp.read_bytes()
+plot_meta = write_encrypted_artifact(
+    OUT / "ablation.eqg.enc", plot_bytes, KEY_INFO, artifact_name="ablation.png"
+)
+if decrypt_artifact((OUT / "ablation.eqg.enc").read_bytes(), KEY_PATH, requester_id=RUN_OWNER) != plot_bytes:
+    raise RuntimeError("Falló la verificación independiente de ida y vuelta de la figura cifrada")
+plot_tmp.unlink()
+GUARD.send("eqg->private-store", "encrypted_plot", (OUT / "ablation.eqg.enc").read_bytes(), visibility="private")
+GUARD.transition("PACKAGED", reason="artefactos privados cifrados y verificados")
+print("Guardado en", OUT, "| run_id=", RUN_ID, "| clave privada=", KEY_PATH)
 
 
-_required = [OUT / "report.json", OUT / "ablation.png"]
+_required = [OUT / "report.eqg.enc", OUT / "ablation.eqg.enc"]
 _missing = [str(p) for p in _required if not p.is_file() or p.stat().st_size == 0]
 if _missing:
     raise RuntimeError("EQG incompleto; faltan artefactos: " + ", ".join(_missing))
 (OUT / "run_manifest.json").write_text(json.dumps({
-    "project": "Edge Quantum Guard",
-    "pipeline": "QAOA MaxCut N=8 p=2; A/C/D/E ABBA ablation",
-    "mode": MODE,
-    "backend": str(BACKEND),
-    "output_dir": str(OUT),
-    "jobs": len(_job_log),
-    "estimated_qpu_seconds": EST_TOTAL,
-    "accounted_seconds": USED_S,
-    "artifacts": ["report.json", "ablation.png"],
-    "completed": True
+    "schema_version": "eqg.private-run-manifest.v1",
+    "run_id": RUN_ID,
+    "visibility": "private",
+    "guard_protocol": "eqg-flow-guard.v1",
+    "artifacts": [report_meta, plot_meta],
+    "completed": True,
+    "integrity_status": "encrypted_and_roundtrip_verified_not_csg_signed"
 }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print("EQG_PIPELINE_COMPLETED")
 print("Artefactos verificados:", ", ".join(str(p) for p in _required), "y", OUT / "run_manifest.json")
