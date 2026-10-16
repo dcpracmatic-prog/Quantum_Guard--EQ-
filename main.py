@@ -120,13 +120,6 @@ if any(p.exists() for p in _legacy_plaintext):
     )
 GUARD = FlowGuard(RUN_ID, RUN_OWNER, allow_community_publication=False)
 GUARD.transition("PRECHECK", reason="validar política y preparar clave por corrida")
-KEY_INFO = create_run_key(RUN_ID, RUN_OWNER, KEY_PATH)
-GUARD.emit(
-    "eqg->owner", "run_key_issued",
-    json.dumps({"run_id": RUN_ID, "key_id": KEY_INFO["key_id"]}, sort_keys=True).encode(),
-    visibility="private",
-)
-GUARD.transition("AUTHORIZED", reason="clave exclusiva creada; publicación comunitaria deshabilitada")
 
 def est_job_s(shots):
     return OVERHEAD_S + sum(shots) * T_SHOT_S
@@ -139,6 +132,14 @@ EST_TOTAL = EST_PRE + len(BLOCK_ORDERS) * EST_BLOCK + EST_POST
 print("Estimado: PRE %.2f + %d x bloque %.2f + POST %.2f = %.2f s  (tope %.1f s, quedan %.0f s)" % (
     EST_PRE, len(BLOCK_ORDERS), EST_BLOCK, EST_POST, EST_TOTAL, HARD_CAP_S, QPU_REMAINING_S))
 assert EST_TOTAL <= HARD_CAP_S, "El plan excede el tope"
+
+KEY_INFO = create_run_key(RUN_ID, RUN_OWNER, KEY_PATH)
+GUARD.send(
+    "eqg->owner", "run_key_issued",
+    json.dumps({"run_id": RUN_ID, "key_id": KEY_INFO["key_id"]}, sort_keys=True).encode(),
+    visibility="private",
+)
+GUARD.transition("AUTHORIZED", reason="presupuesto aprobado y clave exclusiva creada")
 
 
 def _try(fn, default=None):
@@ -465,7 +466,7 @@ def execute_pubs(tcs, shots_list, label):
         "label": label, "mode": MODE, "backend": BACKEND_NAME,
         "shots": [int(x) for x in shots_list], "circuit_count": len(tcs),
     }, sort_keys=True).encode("utf-8")
-    GUARD.emit("eqg->simulator" if MODE == "sim" else "eqg->backend",
+    GUARD.send("eqg->simulator" if MODE == "sim" else "eqg->backend",
                "job_request", request_bytes, visibility="private")
     if USED_S + est > HARD_CAP_S:
         raise RuntimeError("Tope duro: %.2f usados + %.2f estimados > %.1f s. No se lanza %s" % (USED_S, est, HARD_CAP_S, label))
@@ -511,7 +512,7 @@ def execute_pubs(tcs, shots_list, label):
         u, real = _job_usage(job)
         if u is None: u, real = est, False
     result_bytes = json.dumps(counts, sort_keys=True, default=str).encode("utf-8")
-    GUARD.emit("simulator->eqg" if MODE == "sim" else "backend->eqg",
+    GUARD.send("simulator->eqg" if MODE == "sim" else "backend->eqg",
                "job_result", result_bytes, visibility="private")
     USED_S += float(u)
     info = {"label": label, "job_id": jid, "usage_s": float(u), "usage_real": real, "est_s": est, "used_acum_s": USED_S}
@@ -677,7 +678,7 @@ report_meta = write_encrypted_artifact(
 )
 if decrypt_artifact((OUT / "report.eqg.enc").read_bytes(), KEY_PATH, requester_id=RUN_OWNER) != report_bytes:
     raise RuntimeError("Falló la verificación independiente de ida y vuelta del reporte cifrado")
-GUARD.emit("eqg->private-store", "encrypted_report", (OUT / "report.eqg.enc").read_bytes(), visibility="private")
+GUARD.send("eqg->private-store", "encrypted_report", (OUT / "report.eqg.enc").read_bytes(), visibility="private")
 col = {"A": "#c0392b", "C": "#e67e22", "D": "#16a085", "E": "#2980b9"}
 fig, ax = plt.subplots(1, 2, figsize=(13, 4.5))
 for k, a in enumerate("ACDE"):
@@ -698,7 +699,7 @@ plot_meta = write_encrypted_artifact(
 if decrypt_artifact((OUT / "ablation.eqg.enc").read_bytes(), KEY_PATH, requester_id=RUN_OWNER) != plot_bytes:
     raise RuntimeError("Falló la verificación independiente de ida y vuelta de la figura cifrada")
 plot_tmp.unlink()
-GUARD.emit("eqg->private-store", "encrypted_plot", (OUT / "ablation.eqg.enc").read_bytes(), visibility="private")
+GUARD.send("eqg->private-store", "encrypted_plot", (OUT / "ablation.eqg.enc").read_bytes(), visibility="private")
 GUARD.transition("PACKAGED", reason="artefactos privados cifrados y verificados")
 print("Guardado en", OUT, "| run_id=", RUN_ID, "| clave privada=", KEY_PATH)
 

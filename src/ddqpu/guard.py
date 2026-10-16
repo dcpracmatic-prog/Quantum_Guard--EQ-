@@ -217,6 +217,31 @@ class FlowGuard:
         }
         return self.accept_event(event)
 
+    def send(
+        self,
+        channel: str,
+        kind: str,
+        payload: bytes,
+        *,
+        visibility: str = "private",
+    ) -> dict[str, Any]:
+        """Authorize an in-flight logical channel before the caller performs I/O."""
+        channel_allowed = channel in self.allowed_channels
+        if channel == "eqg->community-index":
+            channel_allowed = channel_allowed and self.allow_community_publication and visibility == "public"
+        if visibility == "public" and channel != "eqg->community-index":
+            channel_allowed = False
+        source, destination = channel.split("->", 1) if "->" in channel else (channel, "invalid")
+        meter = self.channel_meters.get(channel)
+        if meter is None:
+            meter = ChannelMeter(
+                source, destination, allowed=channel_allowed, max_bytes=self.max_event_bytes
+            )
+            self.channel_meters[channel] = meter
+        if not meter.inspect(payload, visibility=visibility):
+            self._fail(f"canal bloqueado o presupuesto excedido: {channel}")
+        return self.emit(channel, kind, payload, visibility=visibility)
+
     def verify_artifact(self, payload: bytes, expected_sha3_256: str) -> bool:
         actual = sha3_256(payload)
         if not secrets.compare_digest(actual, expected_sha3_256):
