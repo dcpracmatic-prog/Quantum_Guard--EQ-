@@ -170,7 +170,7 @@ def _cli() -> int:
     args = parser.parse_args()
     if args.command == "decrypt":
         plaintext = decrypt_artifact(
-            Path(args.input).read_bytes(), args.key_file, requester_id=local_owner_id()
+            Path(args.input).read_bytes(), args.key_file
         )
         target = Path(args.output)
         target.parent.mkdir(parents=True, exist_ok=True)

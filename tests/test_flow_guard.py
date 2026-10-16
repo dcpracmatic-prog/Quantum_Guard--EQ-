@@ -7,7 +7,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from ddqpu.guard import FlowGuard, GuardViolation, sha3_256
-from ddqpu.privacy import create_run_key, decrypt_artifact, encrypt_artifact
+from ddqpu.privacy import _cli, create_run_key, decrypt_artifact, encrypt_artifact
 
 
 def _guard():
@@ -142,3 +142,18 @@ def test_publication_requires_explicit_policy():
     g.transition("RUNNING", reason="test")
     with pytest.raises(GuardViolation, match="publicación"):
         g.emit("eqg->community-index", "publish", b"benchmark", visibility="public")
+
+
+
+def test_cli_decrypt_works_with_key_delivered_from_container(tmp_path, monkeypatch):
+    key_path = tmp_path / "run.key"
+    info = create_run_key("run-container", "local:root", key_path)
+    envelope_path = tmp_path / "report.eqg.enc"
+    envelope_path.write_bytes(encrypt_artifact(b"private report", info, artifact_name="report.json"))
+    output_path = tmp_path / "report.json"
+    monkeypatch.setattr(sys, "argv", [
+        "eqg-privacy", "decrypt", "--input", str(envelope_path),
+        "--key-file", str(key_path), "--output", str(output_path),
+    ])
+    assert _cli() == 0
+    assert output_path.read_bytes() == b"private report"

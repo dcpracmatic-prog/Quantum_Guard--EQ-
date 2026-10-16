@@ -18,7 +18,6 @@ dependencies = [
     "numpy",
     "scipy",
     "matplotlib",
-    "cryptography>=42.0",
 ]
 
 [project.optional-dependencies]

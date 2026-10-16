@@ -8,7 +8,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY requirements.txt pyproject.toml README.md ./
 COPY src/ ./src/
-COPY tests/ ./tests/
 COPY main.py ./main.py
 
 RUN python -m pip install --upgrade pip \

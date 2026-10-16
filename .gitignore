@@ -6,7 +6,3 @@ ddqpu_run/
 .pytest_cache/
 # IBM Quantum analytics exports can contain account/user identifiers and instance CRNs.
 **/ibm_usage_analytics/
-# EQG benchmark outputs and per-run decryption keys are private by default.
-outputs/
-*.key
-*.eqg.enc

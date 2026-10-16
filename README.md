@@ -159,14 +159,3 @@ docker run --rm --env IBM_QUANTUM_TOKEN -v "$PWD/outputs:/app/outputs" eqg-centi
 ```
 
 El token se lee del entorno y no se guarda en el repositorio ni en la imagen. La simulación es el modo predeterminado; no envía trabajos a IBM.
-
-
-## Guardián de flujo y resultados privados por corrida
-
-El módulo src/ddqpu/guard.py adapta el detector de egress a la máquina de estados EQG: preflight, autorización, ejecución, verificación y empaquetado. Rechaza eventos fuera de secuencia, replay de nonces, propietarios o corridas ajenas, canales no autorizados y publicación comunitaria no habilitada. Su auditoría registra hashes y metadatos, nunca payloads ni claves.
-
-Los resultados completos y la figura se guardan cifrados como report.eqg.enc y ablation.eqg.enc mediante AES-256-GCM. La clave aleatoria de cada corrida se escribe en un archivo separado con permisos privados; la ruta aparece al terminar. Guarda ese archivo fuera de repositorios y directorios compartidos. Para descifrar un artefacto propio:
-
-    python -m ddqpu.privacy decrypt --input outputs/eqg_ablation/report.eqg.enc --key-file RUTA/RUN_ID.key --output RUTA_PRIVADA/report.json
-
-Cada clave está vinculada a un único run_id. La publicación comunitaria permanece deshabilitada. La etiqueta local del propietario no reemplaza una identidad autenticada: un despliegue multiusuario requiere integrar autenticación y entrega de claves con un servicio de identidad/KMS. El cifrado y el guardián no equivalen a un sello CSG; el manifiesto declara explícitamente que todavía no está firmado por CSG.

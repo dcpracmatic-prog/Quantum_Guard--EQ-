@@ -4,4 +4,3 @@ qiskit-aer
 numpy
 scipy
 matplotlib
-cryptography>=42.0
