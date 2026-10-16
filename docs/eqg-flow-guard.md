@@ -15,7 +15,7 @@ Estados: INIT → PRECHECK → AUTHORIZED → RUNNING → VERIFYING → PACKAGED
 - La clave no debe publicarse, subirse al repositorio ni almacenarse junto a los ciphertexts en un entorno compartido. Entregar el archivo de clave al usuario es un paso de entrega separado.
 - Descifrado: python -m ddqpu.privacy decrypt --input report.eqg.enc --key-file RUTA/run.key --output /ruta/privada/report.json.
 
-La identidad local:<usuario-del-SO> es una etiqueta local, no una autenticación remota. En un servicio multiusuario real, la autenticación del usuario, entrega de clave y revocación deben conectarse a un proveedor de identidad/KMS; no debe confiarse en un owner_id que el cliente pueda declarar libremente. Una clave de corrida robada permite descifrar esa corrida.
+El descifrado local se autoriza por posesión de la clave exclusiva de esa corrida; por eso el archivo de clave es un secreto y no debe compartirse. El campo owner_id es una etiqueta de auditoría, no una autenticación de usuario. La API decrypt_artifact admite requester_id para que una aplicación pueda contrastarlo con una identidad autenticada. En un servicio multiusuario real, la autenticación, entrega de claves y revocación deben conectarse a un proveedor de identidad/KMS. Una clave de corrida robada permite descifrar esa corrida.
 
 ## Índice comunitario y frescura
 
