@@ -28,19 +28,33 @@ jobs:
             --mode sim --smoke --output-dir /app/outputs/eqg_ablation
       - name: Verify outputs and all preregistered contrasts
         run: |
-          test -s outputs/eqg_ablation/report.json
-          test -s outputs/eqg_ablation/ablation.png
+          test -s outputs/eqg_ablation/report.eqg.enc
+          test -s outputs/eqg_ablation/ablation.eqg.enc
           test -s outputs/eqg_ablation/run_manifest.json
           python - <<'PY'
           import json
           from pathlib import Path
           p = Path("outputs/eqg_ablation")
-          report = json.loads((p / "report.json").read_text())
           manifest = json.loads((p / "run_manifest.json").read_text())
+          assert manifest["completed"] is True, manifest
+          assert manifest["visibility"] == "private", manifest
+          assert manifest["integrity_status"] == "encrypted_and_roundtrip_verified_not_csg_signed", manifest
+          assert {x["name"] for x in manifest["artifacts"]} == {"report.eqg.enc", "ablation.eqg.enc"}
+          PY
+      - name: Decrypt only inside the isolated smoke-test container and validate contrasts
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE/outputs:/app/outputs" --entrypoint python eqg-centinela:latest -c '
+          import json
+          from pathlib import Path
+          from ddqpu.privacy import decrypt_artifact
+          p = Path("/app/outputs/eqg_ablation")
+          manifest = json.loads((p / "run_manifest.json").read_text())
+          key = p.parent / (manifest["run_id"] + ".key")
+          report = json.loads(decrypt_artifact((p / "report.eqg.enc").read_bytes(), key, requester_id="local:root"))
           expected = {"C-A", "D-C", "E-C", "E-D", "E-A"}
           got = {x["contrast"] for x in report["contrasts"]}
           assert expected <= got, (expected, got)
-          assert manifest["completed"] is True, manifest
           assert set("ACDE") <= set(report["stats"]), report["stats"].keys()
-          print("EQG_SMOKE_TEST_OK", sorted(got), "backend=", manifest["backend"])
-          PY
+          assert report["guard"]["protocol"] == "eqg-flow-guard.v1"
+          print("EQG_PRIVATE_SMOKE_TEST_OK", sorted(got), "run_id=", manifest["run_id"])
+          '
