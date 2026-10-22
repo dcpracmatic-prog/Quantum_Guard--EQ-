@@ -25,8 +25,8 @@ dependencies = [
 dev = ["pytest", "qiskit-aer", "nbformat", "nbconvert", "ipykernel"]
 
 [project.urls]
-Homepage = "https://github.com/"  # Actualizar con la URL real del repositorio
-Repository = "https://github.com/"  # Actualizar con la URL real del repositorio
+Homepage = "https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-"
+Repository = "https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-"
 
 [tool.setuptools.packages.find]
 where = ["src"]
