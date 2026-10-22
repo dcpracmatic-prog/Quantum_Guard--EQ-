@@ -1,33 +1,33 @@
 # Changelog
 
 ## 5.0.0
-- Nuevo `ddqpu.sentinel` (Centinela): sondeo de 28 circuitos con K candidatos en paralelo (~7 s QPU), Ramsey en cuadratura + CPMG + T1, Gamma_phi, bitacora JSONL, huella de referencia, clasificacion estable/degradado, `compensate_detuning` (rz virtual).
-- Analisis de las 4 corridas v4 en hardware: dos estados de q142 (T2* 155 vs 40 us, salto de frecuencia hasta 6 kHz); el DD elimina ~65 % del exceso de desfase; ZZ -4.05 kHz invariante, 93 % suprimido por CPMG.
-- Correccion: combinar corridas de estados distintos por varianza inversa no es valido (seccion 13 del notebook de usuario).
-- `docs/producto_centinela.md`, `notebooks/centinela_preflight.ipynb`, 7 pruebas nuevas.
+- Added `ddqpu.sentinel` (Sentinel): a 28-circuit probe with K candidates in parallel (~7 seconds of QPU time), quadrature Ramsey + CPMG + T1, Gamma_phi, a JSONL log, reference fingerprint, stable/degraded classification, and `compensate_detuning` (virtual RZ).
+- Analyzed four v4 hardware runs: q142 showed two states (T2* 155 vs. 40 µs, with frequency shifts up to 6 kHz); DD removes ~65% of excess dephasing; ZZ remains at −4.05 kHz and is suppressed 93% by CPMG.
+- Correction: combining runs from different states by inverse variance is invalid (section 13 of the user's notebook).
+- Added `docs/producto_centinela.md`, `notebooks/centinela_preflight.ipynb`, and seven tests.
 
 ## v4.0.0
-### Relevos
-- La verificacion estructural cuenta **todas** las compuertas de 2 qubits (cz/ecr/cx/swap/...). Un SWAP transpilado aparece como 3 CZ y la v3 no lo veia.
-- Se verifican el layout inicial y el final de todos los qubits logicos, y que el bit 0 se mide en el qubit objetivo.
-- Prueba **pareada**: P(1) de cada vecino con el objetivo activo o en |1⟩ frente al objetivo inactivo, al mismo t, con prueba de dos proporciones, Bonferroni y cota superior al 95 %. Se elimina la comparacion contra el piso de lectura de otro qubit y las correlaciones de 7 puntos.
-- Nuevo bloque ZZ: vecinos en |1⟩ para medir el corrimiento de fase del objetivo y comprobar si el DD lo cancela.
-- El control lejano se elige por menor error de lectura y distancia >= 4.
+### Relays
+- Structural verification counts **all** two-qubit gates (CZ/ECR/CX/SWAP/...). A transpiled SWAP appears as three CZ gates, which v3 did not detect.
+- Verify the initial and final layouts of all logical qubits and confirm that bit 0 is measured on the target qubit.
+- **Paired** test: compare each neighbor's P(1) with the target active or in |1⟩ against the inactive-target reference, at the same time, using a two-proportion test, Bonferroni correction, and a 95% upper bound. This replaces comparison with another qubit's readout floor and correlations based on seven points.
+- Added a ZZ block: prepare neighbors in |1⟩ to measure the target's phase shift and test whether DD cancels it.
+- Select the distant control qubit by lower readout error and distance >= 4.
 
-### Resultados
-- Coherencia en cuadratura (lecturas en X e Y): |ρ01| no oscila con el detuning.
-- Rejilla de tiempos con tramo denso (paso <= 5 µs hasta 40 µs) y tramo escalado a T2 (0.2x a 1.6x): sin aliasing.
-- Mitigacion de lectura por qubit con calibracion en el mismo job.
-- Ajustes con C = 0, ponderados por ruido de disparo y error inflado por √χ²_red. Se marca baja confianza si el error supera el 30 % o el barrido no llega a 0.7 T2.
-- Delays en unidades dt, multiplos de la granularidad del backend: mismo tiempo exacto en libre/CPMG/XY4 y sin warnings. Se reporta t efectivo con pulsos.
-- Orden aleatorio de circuitos, shots por PUB, estimacion y freno de tiempo QPU.
-- Modos `sim` (FakeFez) y `reuse` (reanalisis por job ID).
-- Seleccion de qubit con target API: min(T2, 2T1), error sx y error de lectura.
-- El token no se guarda en disco.
+### Results
+- Quadrature coherence (X and Y measurements): |ρ01| does not oscillate with detuning.
+- Time grid with a dense segment (step <= 5 µs up to 40 µs) and a segment scaled to T2 (0.2x to 1.6x): no aliasing.
+- Per-qubit readout mitigation using calibration in the same job.
+- Fits with C = 0, weighted by shot noise, with errors inflated by √χ²_red. Low confidence is flagged if the error exceeds 30% or the sweep does not reach 0.7 T2.
+- Delays are expressed in dt units, in multiples of backend granularity: free/CPMG/XY4 use exactly the same wait time, with no rounding warnings. Effective time including pulses is reported.
+- Randomized circuit order, shots per PUB, runtime estimation, and QPU time limit.
+- `sim` (FakeFez) and `reuse` (reanalyze by job ID) modes.
+- Qubit selection using target API: min(T2, 2T1), sx error, and readout error.
+- The token is not stored on disk.
 
 ## v3 (notebook -9)
-Medicion de vecinos y control; verificacion de SWAP por nombre.
+Neighbor and control measurements; SWAP verification by gate name.
 ## v2 (notebook -8)
-Barrido escalado a T2; ajuste Ramsey para libre.
+Sweep scaled to T2; Ramsey fit for free evolution.
 ## v1 (notebook -7)
-Libre/CPMG/XY4 a 2-30 µs, barrido largo y barrido N.
+Free/CPMG/XY4 at 2–30 µs, long sweep, and N sweep.

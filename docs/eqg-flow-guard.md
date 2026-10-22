@@ -1,30 +1,30 @@
-# EQG Flow Guard y artefactos privados por corrida
+# EQG Flow Guard and Per-Run Private Artifacts
 
-## Alcance
+## Scope
 
-El guardián adapta el detector de duplicación de egress (EgressLink) a un protocolo EQG de eventos y canales. La ruta de ejecución usa send() como compuerta lógica antes de llamadas al simulador/backend y antes de escribir artefactos privados. Vigila las transiciones de estado, el propietario y el identificador de corrida, secuencia monotónica, nonces anti-replay, canales autorizados, límites de tamaño y hashes de artefactos. El registro no almacena payloads ni claves.
+The guard adapts the egress-duplication detector (EgressLink) to an EQG protocol of events and channels. The execution path uses `send()` as a logical gate before simulator/backend calls and before writing private artifacts. It monitors state transitions, owner and run identifiers, monotonic sequence numbers, anti-replay nonces, authorized channels, size limits, and artifact hashes. Logs do not store payloads or keys.
 
-Estados: INIT → PRECHECK → AUTHORIZED → RUNNING → VERIFYING → PACKAGED; las anomalías llevan a QUARANTINED y los errores operativos pueden llevar a REJECTED. No existe una transición de recuperación silenciosa desde estados terminales.
+States: `INIT → PRECHECK → AUTHORIZED → RUNNING → VERIFYING → PACKAGED`. Anomalies lead to `QUARANTINED`, while operational errors may lead to `REJECTED`. No silent recovery transition is allowed from terminal states.
 
-## Privacidad por corrida
+## Per-run privacy
 
-- Cada corrida crea una clave aleatoria AES-256-GCM exclusiva y la guarda en un archivo separado con permisos de propietario (0600 en POSIX).
-- report.json y ablation.png se cifran como report.eqg.enc y ablation.eqg.enc. Los artefactos en claro no se conservan en el directorio de salida.
-- run_manifest.json sólo contiene versión, identificador aleatorio de corrida y hashes de ciphertext/envelope; no incluye proveedor, backend, resultados, coste, propietario ni datos brutos.
-- La clave se vincula al run_id, al propietario local y al identificador de clave. No permite descifrar otra corrida que tenga una clave distinta.
-- La clave no debe publicarse, subirse al repositorio ni almacenarse junto a los ciphertexts en un entorno compartido. Entregar el archivo de clave al usuario es un paso de entrega separado.
-- Descifrado: python -m ddqpu.privacy decrypt --input report.eqg.enc --key-file RUTA/run.key --output /ruta/privada/report.json.
+- Each run creates a unique random AES-256-GCM key and stores it in a separate file with owner-only permissions (0600 on POSIX systems).
+- `report.json` and `ablation.png` are encrypted as `report.eqg.enc` and `ablation.eqg.enc`. Plaintext artifacts are not retained in the output directory.
+- `run_manifest.json` contains only the version, a random run identifier, and ciphertext/envelope hashes. It excludes the provider, backend, results, cost, owner, and raw data.
+- The key is bound to the `run_id`, local owner, and key identifier. It cannot decrypt another run that uses a different key.
+- Do not publish the key, commit it to the repository, or store it beside ciphertexts in a shared environment. Delivering the key file to the user is a separate handoff step.
+- To decrypt: `python -m ddqpu.privacy decrypt --input report.eqg.enc --key-file PATH/run.key --output /private/path/report.json`.
 
-El descifrado local se autoriza por posesión de la clave exclusiva de esa corrida; por eso el archivo de clave es un secreto y no debe compartirse. El campo owner_id es una etiqueta de auditoría, no una autenticación de usuario. La API decrypt_artifact admite requester_id para que una aplicación pueda contrastarlo con una identidad autenticada. En un servicio multiusuario real, la autenticación, entrega de claves y revocación deben conectarse a un proveedor de identidad/KMS. Una clave de corrida robada permite descifrar esa corrida.
+Local decryption is authorized by possession of the unique key for that run; therefore, the key file is a secret and must not be shared. The `owner_id` field is an audit label, not user authentication. The `decrypt_artifact` API accepts `requester_id` so an application can compare it with an authenticated identity. In a real multi-user service, authentication, key delivery, and revocation must be integrated with an identity provider/KMS. Anyone who steals a run key can decrypt that run.
 
-## Índice comunitario y frescura
+## Community index and freshness
 
-La publicación está desactivada por defecto. El guardián rechaza eventos públicos salvo que una política lo habilite expresamente; los resultados privados no se convierten automáticamente en registros comunitarios. Esta versión no implementa un historial global de resultados. Cada comparación fresca requiere nuevas ejecuciones de las plataformas elegidas; el manifiesto local no da acceso a otras corridas.
+Publication is disabled by default. The guard rejects public events unless a policy explicitly enables them; private results are not automatically turned into community records. This version does not implement a global results history. Each fresh comparison requires new runs on the selected platforms; the local manifest does not provide access to other runs.
 
-## Límite criptográfico
+## Cryptographic limitations
 
-AES-GCM protege los artefactos en reposo y detecta alteraciones del ciphertext. El hash SHA3-256 del guardián detecta discrepancias de bytes dentro del proceso. Esto no equivale a un sello notarial CSG: la integración con CSG, la confianza en claves y el anclaje antirretroceso se mantienen como controles separados. El guardián tampoco demuestra la veracidad física de los datos reportados por una QPU ni puede detectar un espejo pasivo fuera de los canales que controla.
+AES-GCM protects artifacts at rest and detects ciphertext tampering. The guard's SHA3-256 hash detects byte discrepancies within the process. This is not equivalent to a notarial CSG seal: CSG integration, key trust, and rollback protection remain separate controls. The guard also cannot establish the physical truth of data reported by a QPU or detect a passive mirror outside the channels it controls.
 
-## Verificación
+## Verification
 
-Ejecutar pytest -q tests/test_flow_guard.py. La suite comprueba transiciones, replay, reordenamiento, propietario incorrecto, canal público no autorizado, presupuesto de egress, modificación de artefactos, cifrado/descifrado por corrida, clave incorrecta y manipulación de ciphertext.
+Run `pytest -q tests/test_flow_guard.py`. The suite checks state transitions, replay, reordering, incorrect owners, unauthorized public channels, egress budgets, artifact modification, per-run encryption/decryption, incorrect keys, and ciphertext tampering.

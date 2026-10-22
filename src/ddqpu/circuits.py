@@ -1,8 +1,8 @@
-"""Construccion de circuitos DD con espectadores (vecinos + control) y tiempos alineados a dt.
+"""Build DD circuits with spectators (neighbors + control) and delays aligned to dt.
 
-Convencion de bits: bit 0 = objetivo, bits 1..k = vecinos, ultimo bit = control lejano.
-Todos los qubits del layout se miden en todos los circuitos, asi cada circuito aporta datos
-de "relevo" (poblacion en espectadores) sin coste extra de circuitos.
+Bit convention: bit 0 = target, bits 1..k = neighbors, final bit = distant control.
+Measure all layout qubits in every circuit so each circuit also provides relay data
+(spectator populations) without requiring extra circuits.
 """
 from __future__ import annotations
 
@@ -18,15 +18,15 @@ BASES = ("X", "Y")
 
 @dataclass
 class Timing:
-    """Restricciones de tiempo del backend (todo en unidades de dt)."""
+    """Backend timing constraints (all values are in dt units)."""
     dt: float                 # segundos por muestra
     granularity: int = 16     # multiplo obligatorio de duracion de delay
     min_length: int = 64
-    x_duration_dt: int = 0    # duracion de un pulso X/Y (para t_efectivo)
+    x_duration_dt: int = 0    # duration of an X/Y pulse (for effective time)
 
     def us_to_dt(self, t_us: float) -> int:
-        """Redondea t_us al multiplo de granularidad mas cercano (evita los UserWarning de redondeo
-        y garantiza que libre/CPMG/XY4 tengan exactamente el mismo tiempo de espera)."""
+        """Round t_us to the nearest granularity multiple (avoids rounding UserWarnings
+        and ensures free/CPMG/XY4 use exactly the same wait time)."""
         n = int(round(t_us * 1e-6 / self.dt))
         g = max(int(self.granularity), 1)
         return int(round(n / g) * g)
@@ -57,14 +57,14 @@ def timing_from_backend(backend) -> Timing:
 
 @dataclass
 class CircuitSpec:
-    """Metadatos de un circuito del lote (se serializan en el manifiesto del job)."""
+    """Metadata for one batch circuit (serialized in the job manifest)."""
     kind: str                 # main | cal0 | cal1 | idle | exc1 | zz | nsweep
     protocol: str = "none"    # free | cpmg | xy4 | none
     basis: str = "Z"          # X | Y | Z
-    t_us: float = 0.0         # tiempo de espera nominal alineado a dt
-    t_eff_us: float = 0.0     # tiempo total incluyendo pulsos DD
+    t_us: float = 0.0         # nominal wait time aligned to dt
+    t_eff_us: float = 0.0     # total time including DD pulses
     n_pulses: int = 0
-    spectator_state: str = "0"  # estado preparado en los vecinos
+    spectator_state: str = "0"  # prepared state of neighboring spectators
     shots: int = 0
     extra: dict = field(default_factory=dict)
 
@@ -81,8 +81,8 @@ def _pulse_sequence(protocol: str, n_cpmg: int, n_xy4_cycles: int) -> List[str]:
 
 
 def _dd_block(qc: QuantumCircuit, q: int, total_dt: int, pulses: Sequence[str], timing: Timing):
-    """tau/2 - P - tau - P - ... - P - tau/2, con todos los delays en dt y multiplos de granularidad.
-    El residuo de redondeo se absorbe en el ultimo tramo para conservar el tiempo total exacto."""
+    """Build tau/2 - P - tau - P - ... - P - tau/2 with delays in dt and granularity multiples.
+    Absorb rounding residual in the final segment to preserve the exact total duration."""
     if total_dt <= 0:
         return
     if not pulses:
@@ -114,7 +114,7 @@ def build_coherence_circuit(
     spectator_state: str = "0",
     n_neighbors: int = 2,
 ):
-    """Objetivo en |+>, espera con/sin DD, lectura en base X o Y. Espectadores inactivos."""
+    """Prepare target in |+>, wait with/without DD, and measure in X or Y. Spectators are idle."""
     n = 1 + n_spectators
     t_dt = timing.us_to_dt(t_us)
     pulses = _pulse_sequence(protocol, n_cpmg, n_xy4_cycles) if t_dt > 0 else []
@@ -147,9 +147,9 @@ def build_readout_cal(n_qubits: int, state: str):
 
 
 def build_relay_reference(t_us: float, n_spectators: int, timing: Timing, target_state: str):
-    """Referencia pareada para relevos.
-    target_state='0' -> objetivo inactivo (linea base de cada vecino a igual t).
-    target_state='1' -> objetivo excitado |1> (caso mas sensible a transferencia por intercambio)."""
+    """Paired relay reference.
+    target_state='0' -> idle target (each neighbor's baseline at the same t).
+    target_state='1' -> target excited in |1> (more sensitive to exchange-mediated transfer)."""
     n = 1 + n_spectators
     t_dt = timing.us_to_dt(t_us)
     qc = QuantumCircuit(n, n, name=f"relay_t{target_state}_{t_dt}dt")
@@ -167,7 +167,7 @@ def build_relay_reference(t_us: float, n_spectators: int, timing: Timing, target
 def default_time_grid(t2_ref_us: float, fractions: Sequence[float] | None = None, t_max_us: float = 450.0,
                       dense_us: Sequence[float] | None = None):
     """Rejilla en dos tramos:
-    - tramo denso absoluto (paso <= 5 us hasta 40 us): resuelve la fase sin aliasing para |detuning| < ~100 kHz
+    - dense absolute segment (step <= 5 us up to 40 us): resolves phase without aliasing for |detuning| < ~100 kHz
       (en v2/v3 el paso era de 26-130 us y el detuning real de ~27 kHz aparecia como ~54 kHz);
     - tramo escalado a T2 calibrado (0.2x .. 1.6x): resuelve la envolvente y beta."""
     if dense_us is None:
@@ -186,7 +186,7 @@ def default_time_grid(t2_ref_us: float, fractions: Sequence[float] | None = None
 
 
 def expected_parity_z(qc: QuantumCircuit) -> int:
-    """Utilidad para pruebas: numero de X/Y en el objetivo (debe ser par para volver a |+>)."""
+    """Testing utility: number of X/Y gates on target (must be even to return to |+>)."""
     return sum(1 for ins in qc.data if ins.operation.name in ("x", "y") and qc.find_bit(ins.qubits[0]).index == 0)
 
 

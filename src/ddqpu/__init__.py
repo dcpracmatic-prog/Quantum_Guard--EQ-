@@ -1,7 +1,7 @@
-"""Validación de Dynamical Decoupling en QPU IBM con control de relevos.
+"""Validate dynamical decoupling on IBM QPUs with relay control.
 
-Los módulos se importan explícitamente (por ejemplo, ``ddqpu.circuits`` o
-``ddqpu.sentinel``) para que las herramientas auxiliares no carguen todo el
-stack de Qiskit cuando solo necesitan utilidades independientes.
+Import modules explicitly (for example, ``ddqpu.circuits`` or
+``ddqpu.sentinel``) so helper tools do not load the full Qiskit stack
+when they only need independent utilities.
 """
 __version__ = "5.0.0"

@@ -1,13 +1,13 @@
-# Alcance de licencias
+# Licensing Scope
 
-## Contenido propio del proyecto
+## First-party project content
 
-La licencia raíz **Elastic License 2.0 (ELv2)** se aplica al contenido original de primera parte de este repositorio en la versión actual: código fuente, documentación, notebooks, informes y resultados creados para el proyecto, incluidos los materiales EQG. El archivo `LICENSE` contiene los términos completos.
+The root **Elastic License 2.0 (ELv2)** applies to the first-party original content in the current version of this repository, including source code, documentation, notebooks, reports, and project results, including EQG materials. The `LICENSE` file contains the complete terms.
 
-## Material de terceros y datos externos
+## Third-party materials and external data
 
-La declaración ELv2 no cambia ni reemplaza las condiciones de terceros. Se conservan los avisos y licencias propios de dependencias, fragmentos incorporados y otros materiales ajenos. La evidencia obtenida en IBM Quantum continúa sujeta a los términos de servicio y políticas de IBM indicados en el README; no se ofrece aquí como material relicenciado por el proyecto.
+The ELv2 statement does not change or replace third-party terms. Notices and licenses for dependencies, incorporated excerpts, and other materials owned by others remain in effect. Evidence obtained from IBM Quantum remains subject to the IBM Quantum terms of service and policies described in the README; the project does not relicense that evidence.
 
-## Versiones anteriores
+## Earlier versions
 
-Esta aclaración describe la licencia prevista para el contenido propio en la versión actual del repositorio. No afirma que cambien retroactivamente los términos de copias o versiones distribuidas con anterioridad.
+This clarification describes the intended license for first-party content in the current repository version. It does not claim to retroactively change the terms of previously distributed copies or versions.

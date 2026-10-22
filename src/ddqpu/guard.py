@@ -152,9 +152,9 @@ class FlowGuard:
         if not isinstance(event, dict) or not required.issubset(event):
             self._fail("esquema de evento incompleto")
         if event["run_id"] != self.run_id:
-            self._fail("run_id ajeno a la ejecución activa")
+            self._fail("run_id does not match the active run")
         if event["owner_id"] != self.owner_id:
-            self._fail("propietario ajeno a la ejecución activa")
+            self._fail("owner does not match the active run")
         if type(event["sequence"]) is not int or event["sequence"] != self.sequence + 1:
             self._fail("secuencia repetida, omitida o fuera de orden")
         nonce = event["nonce"]
@@ -162,16 +162,16 @@ class FlowGuard:
             self._fail("nonce inválido o repetido")
         channel = event["channel"]
         if channel not in self.allowed_channels:
-            self._fail(f"canal no autorizado: {channel}")
+            self._fail(f"unauthorized channel: {channel}")
         if event["visibility"] not in {"private", "public"}:
             self._fail("visibilidad inválida")
         if event["visibility"] == "public":
             if channel != "eqg->community-index" or not self.allow_community_publication:
-                self._fail("publicación comunitaria no autorizada por política")
+                self._fail("community publication is not authorized by policy")
         if channel == "eqg->community-index" and (
             event["visibility"] != "public" or not self.allow_community_publication
         ):
-            self._fail("el índice comunitario está deshabilitado para esta corrida")
+            self._fail("the community index is disabled for this run")
         size = event["payload_bytes"]
         digest = event["payload_sha3_256"]
         if type(size) is not int or size < 0 or size > self.max_event_bytes:
@@ -239,7 +239,7 @@ class FlowGuard:
             )
             self.channel_meters[channel] = meter
         if not meter.inspect(payload, visibility=visibility):
-            self._fail(f"canal bloqueado o presupuesto excedido: {channel}")
+            self._fail(f"channel is blocked or budget exceeded: {channel}")
         return self.emit(channel, kind, payload, visibility=visibility)
 
     def verify_artifact(self, payload: bytes, expected_sha3_256: str) -> bool:

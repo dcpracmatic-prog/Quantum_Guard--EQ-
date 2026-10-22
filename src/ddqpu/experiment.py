@@ -1,4 +1,4 @@
-"""Orquestacion: un unico job con barrido principal + referencias de relevo + ZZ + calibracion de lectura."""
+"""Orchestrate one job with a main sweep, relay references, ZZ measurements, and readout calibration."""
 from __future__ import annotations
 
 import json
@@ -19,11 +19,11 @@ from . import analysis as A
 @dataclass
 class Config:
     backend_name: str = "ibm_fez"
-    force_target: Optional[int] = None       # p.ej. 142 para comparar con corridas previas
+    force_target: Optional[int] = None       # e.g., 142 to compare with previous runs
     n_neighbors: int = 2
     n_cpmg: int = 6
     n_xy4_cycles: int = 2
-    shots_main: int = 1024                   # por base; X+Y => 2048 efectivos por punto
+    shots_main: int = 1024                   # per basis; X+Y => 2048 effective shots per point
     shots_ref: int = 2048                    # referencias de relevo (se agregan entre tiempos)
     shots_cal: int = 4096
     t2_fractions: Optional[List[float]] = None
@@ -31,9 +31,9 @@ class Config:
     relay_fractions: List[float] = field(default_factory=lambda: [0.1, 0.5, 1.0])
     zz_fractions: List[float] = field(default_factory=lambda: [0.05, 0.10, 0.20])
     enable_zz: bool = True
-    shuffle_seed: Optional[int] = 1234       # orden aleatorio => la deriva no se correlaciona con t
+    shuffle_seed: Optional[int] = 1234       # randomized order prevents drift from correlating with t
     optimization_level: int = 1
-    max_qpu_seconds: float = 240.0           # freno de seguridad para el plan Open (10 min/mes)
+    max_qpu_seconds: float = 240.0           # safety limit for the Open plan (10 min/month)
 
 
 def build_batch(cfg: Config, backend, layout: Optional[Layout] = None):
@@ -61,7 +61,7 @@ def build_batch(cfg: Config, backend, layout: Optional[Layout] = None):
         add(*build_relay_reference(t, n_spec, timing, "0"), cfg.shots_ref)
         add(*build_relay_reference(t, n_spec, timing, "1"), cfg.shots_ref)
     if cfg.enable_zz:
-        # se usan puntos EXACTOS de la rejilla principal para comparar fase a igual t
+        # Use EXACT points from the main grid to compare phase at equal t.
         zz_t = sorted(set(min(grid, key=lambda g: abs(g - f * layout.target_t2_us)) for f in cfg.zz_fractions))
         for prot in ("free", "cpmg"):
             for t in zz_t:
@@ -77,14 +77,14 @@ def build_batch(cfg: Config, backend, layout: Optional[Layout] = None):
 
 
 def run_batch(cfg: Config, backend, circs, specs, layout, out_dir: Path, mode: str = "hardware"):
-    """Transpila con layout bloqueado, verifica relevos estructurales y envia UN job.
-    mode: 'hardware' | 'sim' (backend falso local)."""
+    """Transpile with a locked layout, verify structural relays, and submit ONE job.
+    mode: 'hardware' | 'sim' (local fake backend)."""
     from qiskit_ibm_runtime import SamplerV2
     tcs, report = transpile_locked(circs, backend, layout, cfg.optimization_level)
     if not report["ok"]:
         raise RuntimeError("Verificacion estructural fallo (posible relevo):\n" + "\n".join(report["issues"][:10]))
     est = estimate_qpu_seconds(specs, backend)
-    print(f"Circuitos: {len(tcs)} | shots totales: {sum(s.shots for s in specs)} | QPU estimado ~{est:.0f} s")
+    print(f"Circuits: {len(tcs)} | total shots: {sum(s.shots for s in specs)} | estimated QPU time ~{est:.0f} s")
     if mode == "hardware" and est > cfg.max_qpu_seconds:
         raise RuntimeError(f"Estimacion {est:.0f}s > max_qpu_seconds={cfg.max_qpu_seconds}. Reduce shots o puntos.")
     sampler = SamplerV2(mode=backend)
@@ -112,14 +112,14 @@ def save_counts(out_dir: Path, manifest: dict, counts: list):
 
 
 def reload_from_job(service, job_id: str, manifest_path: Path):
-    """Reanalisis sin volver a hacer cola: recupera el resultado de un job ya ejecutado."""
+    """Reanalyze without returning to the queue: retrieve results from a completed job."""
     manifest = json.loads(Path(manifest_path).read_text())
     res = service.job(job_id).result()
     counts = [A.counts_from_pub(res[i]) for i in range(len(manifest["specs"]))]
     return manifest, counts
 
 
-# ------------------------------------------------------------------ analisis completo
+# ------------------------------------------------------------------ full analysis
 def analyze(manifest: dict, counts: list) -> dict:
     specs = manifest["specs"]
     lay = manifest["layout"]
@@ -152,7 +152,7 @@ def analyze(manifest: dict, counts: list) -> dict:
         out["fits_exp"][p] = A.fit_envelope(s["t_eff"], s["mag"], s["smag"], beta_fixed=1.0, label=p + "_exp")
     out["detuning"] = A.detuning_from_phase(out["series"]["free"]["t"], out["series"]["free"]["phase"],
                                            out["series"]["free"]["mag"])
-    # Extension de coherencia (con barras de error)
+    # Coherence extension (with error bars)
     ext = {}
     ff = out["fits"]["free"]
     for p in ("cpmg", "xy4"):
@@ -166,7 +166,7 @@ def analyze(manifest: dict, counts: list) -> dict:
     rs = A.relay_statistics(recs, nb_bits, n_bits - 1)
     out["relay"] = rs
     out["relay_verdict"] = A.relay_verdict(rs)
-    # ZZ: comparar fase y coherencia con vecinos en |1> vs |0> a los mismos t
+    # ZZ: compare phase and coherence with neighbors in |1> vs. |0> at the same t.
     zz = {}
     if any(r["spec"]["kind"] == "zz" for r in recs):
         for p in ("free", "cpmg"):
@@ -202,10 +202,10 @@ def to_jsonable(o):
 def summarize(res: dict, manifest: dict) -> str:
     L = []
     lay = manifest["layout"]
-    L.append(f"Backend={manifest['backend']}  objetivo=q{lay['target']} (T2 cal={lay['target_t2_us']:.1f} us, "
+    L.append(f"Backend={manifest['backend']}  target=q{lay['target']} (calibrated T2={lay['target_t2_us']:.1f} us, "
              f"T1 cal={lay['target_t1_us']:.1f} us)  vecinos={lay['neighbors']}  control=q{lay['control']}  "
              f"job={manifest['job_id']}")
-    L.append(f"Error de lectura objetivo: P(1|0)={res['readout']['e0'][0]:.4f}  P(0|1)={res['readout']['e1'][0]:.4f}")
+    L.append(f"Target readout error: P(1|0)={res['readout']['e0'][0]:.4f}  P(0|1)={res['readout']['e1'][0]:.4f}")
     for p in PROTOCOLS:
         f = res["fits"][p]
         if f:
@@ -213,7 +213,7 @@ def summarize(res: dict, manifest: dict) -> str:
             L.append(f"T2[{p:>4}] = {f['T2']:7.1f} +/- {f['T2_err']:5.1f} us  beta={f['beta']:.2f}+/-{f['beta_err']:.2f}"
                      f"  chi2_red={f['chi2_red']:.1f}{tag}")
         else:
-            L.append(f"T2[{p:>4}] = sin ajuste")
+            L.append(f"T2[{p:>4}] = no fit")
     d = res.get("detuning")
     if d:
         L.append(f"Detuning (fase desenvuelta, {d['n_points']} pts hasta {d['t_max_us']:.0f} us): "
@@ -225,5 +225,5 @@ def summarize(res: dict, manifest: dict) -> str:
     L.append("Relevos: " + ("DETECTADO en " + str(rv["flagged"]) if rv["relay_detected"] else
                              f"no detectado; cota superior 95% de transferencia a vecinos = {rv['worst_upper95']*100:.3f} %"))
     for p, z in res.get("zz", {}).items():
-        L.append(f"ZZ efectivo (vecinos en |1>) con {p}: {z['zz_kHz']:+.2f} kHz")
+        L.append(f"Effective ZZ (neighbors in |1>) with {p}: {z['zz_kHz']:+.2f} kHz")
     return "\n".join(L)

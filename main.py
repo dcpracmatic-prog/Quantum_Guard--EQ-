@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""Edge Quantum Guard: pipeline completo derivado del notebook de ablación ABBA.
-Incluye Ojos/AOM, Reflejos/MORPH, Juicio causal, Manos/DD, QAOA MaxCut,
-brazos A/C/D/E, snapshots PRE/POST, presupuesto y contrastes estadísticos.
-Hardware requiere --mode hardware --confirm-spend y token IBM en el entorno.
+"""Edge Quantum Guard: complete pipeline based on the ABBA ablation notebook.
+Includes Eyes/AOM, Reflexes/MORPH, causal Judgment, Hands/DD, QAOA MaxCut,
+A/C/D/E arms, PRE/POST snapshots, budget controls, and statistical contrasts.
+Hardware mode requires --mode hardware --confirm-spend and an IBM token in the environment.
 """
 import argparse as _argparse
 import os as _os
 import sys as _sys
 
-_parser = _argparse.ArgumentParser(description="EQG completo: ablación QAOA A/C/D/E.")
+_parser = _argparse.ArgumentParser(description="Full EQG QAOA ablation: A/C/D/E.")
 _parser.add_argument("--mode", choices=("sim", "hardware"), default="sim")
 _parser.add_argument("--backend", default="ibm_kingston")
 _parser.add_argument("--confirm-spend", action="store_true")
-_parser.add_argument("--smoke", action="store_true", help="Prueba rápida local con shots reducidos.")
+_parser.add_argument("--smoke", action="store_true", help="Run a quick local check with fewer shots.")
 _parser.add_argument("--output-dir", default="outputs/eqg_ablation")
 _parser.add_argument("--list-backends", action="store_true")
 _args, _unknown = _parser.parse_known_args()
@@ -20,7 +20,7 @@ _args, _unknown = _parser.parse_known_args()
 if _args.list_backends:
     _token = _os.getenv("IBM_QUANTUM_TOKEN") or _os.getenv("QISKIT_IBM_TOKEN")
     if not _token:
-        _sys.exit("ERROR: define IBM_QUANTUM_TOKEN o QISKIT_IBM_TOKEN para consultar el catálogo IBM.")
+        _sys.exit("ERROR: set IBM_QUANTUM_TOKEN or QISKIT_IBM_TOKEN to query the IBM catalog.")
     from qiskit_ibm_runtime import QiskitRuntimeService
     try:
         _service = QiskitRuntimeService(channel="ibm_cloud", token=_token.strip(),
@@ -39,13 +39,13 @@ if _args.list_backends:
 
 if _args.mode == "hardware":
     if not _args.confirm_spend:
-        _parser.error("hardware requiere --confirm-spend; revisa antes el presupuesto QPU.")
+        _parser.error("hardware mode requires --confirm-spend; review the QPU budget first.")
     if not (_os.getenv("IBM_QUANTUM_TOKEN") or _os.getenv("QISKIT_IBM_TOKEN")):
-        _parser.error("hardware requiere IBM_QUANTUM_TOKEN o QISKIT_IBM_TOKEN.")
+        _parser.error("hardware mode requires IBM_QUANTUM_TOKEN or QISKIT_IBM_TOKEN.")
 elif _args.confirm_spend:
-    _parser.error("--confirm-spend solo se usa con --mode hardware.")
+    _parser.error("--confirm-spend is only used with --mode hardware.")
 if _args.smoke and _args.mode != "sim":
-    _parser.error("--smoke solo funciona en modo sim.")
+    _parser.error("--smoke is only available in sim mode.")
 
 _os.environ["EQG_MODE"] = _args.mode
 _os.environ["EQG_BACKEND"] = _args.backend
@@ -103,9 +103,9 @@ def print(*args, **kwargs):
     message = " ".join(str(arg) for arg in args)
     if message == "EQG_PIPELINE_COMPLETED":
         _builtins.print(message, **kwargs)
-    elif message.startswith("Artefactos verificados:"):
-        _builtins.print("Artefactos privados cifrados y verificados.")
-    elif message.startswith("Guardado en"):
+    elif message.startswith("Verified artifacts:"):
+        _builtins.print("Private artifacts encrypted and verified.")
+    elif message.startswith("Saved to"):
         _builtins.print("EQG private run prepared; key file:", KEY_PATH, "| run_id:", RUN_ID)
 
 RUN_ID = uuid.uuid4().hex
@@ -114,12 +114,12 @@ KEY_PATH = Path(os.getenv("EQG_KEY_OUTPUT", str(OUT.parent / f"{RUN_ID}.key")))
 _legacy_plaintext = [OUT / "report.json", OUT / "ablation.png"]
 if any(p.exists() for p in _legacy_plaintext):
     raise RuntimeError(
-        "Se detectaron artefactos EQG antiguos en claro. Muévelos a almacenamiento privado "
-        "o elimínalos antes de ejecutar esta versión: " +
+        "Legacy plaintext EQG artifacts were found. Move them to private storage "
+        "or remove them before running this version: " +
         ", ".join(str(p) for p in _legacy_plaintext if p.exists())
     )
 GUARD = FlowGuard(RUN_ID, RUN_OWNER, allow_community_publication=False)
-GUARD.transition("PRECHECK", reason="validar política y preparar clave por corrida")
+GUARD.transition("PRECHECK", reason="validate policy and prepare per-run key")
 
 def est_job_s(shots):
     return OVERHEAD_S + sum(shots) * T_SHOT_S
@@ -129,9 +129,9 @@ EST_PRE = est_job_s([SHOTS_SNAP_FULL] * 4 * 3)
 EST_BLOCK = est_job_s([SHOTS_WORK] * _n_arm_circ + [SHOTS_SNAP_LIGHT] * 3)
 EST_POST = est_job_s([SHOTS_SNAP_FULL] * 4 * 4)
 EST_TOTAL = EST_PRE + len(BLOCK_ORDERS) * EST_BLOCK + EST_POST
-print("Estimado: PRE %.2f + %d x bloque %.2f + POST %.2f = %.2f s  (tope %.1f s, quedan %.0f s)" % (
+print("Estimate: PRE %.2f + %d x block %.2f + POST %.2f = %.2f s (cap %.1f s, %.0f s remaining)" % (
     EST_PRE, len(BLOCK_ORDERS), EST_BLOCK, EST_POST, EST_TOTAL, HARD_CAP_S, QPU_REMAINING_S))
-assert EST_TOTAL <= HARD_CAP_S, "El plan excede el tope"
+assert EST_TOTAL <= HARD_CAP_S, "The plan exceeds the hard cap"
 
 KEY_INFO = create_run_key(RUN_ID, RUN_OWNER, KEY_PATH)
 GUARD.send(
@@ -139,7 +139,7 @@ GUARD.send(
     json.dumps({"run_id": RUN_ID, "key_id": KEY_INFO["key_id"]}, sort_keys=True).encode(),
     visibility="private",
 )
-GUARD.transition("AUTHORIZED", reason="presupuesto aprobado y clave exclusiva creada")
+GUARD.transition("AUTHORIZED", reason="budget approved and unique key created")
 
 
 def _try(fn, default=None):
@@ -303,7 +303,7 @@ def apply_dd(tcs, backend, qubits):
         try:
             tc2 = pm.run(tc)
         except Exception as e:
-            print("[DD] ERROR (%s) -> circuito sin DD" % e); tc2 = tc
+            print("[DD] ERROR (%s) -> circuit without DD" % e); tc2 = tc
         added += cnt(tc2) - cnt(tc); out.append(tc2)
     return out, added
 
@@ -424,8 +424,8 @@ _job_log, _SIM = [], {}
 
 def get_backend():
     if MODE == "sim":
-        # Backend local de 8 qubits: evita expandir circuitos a los 156 wires de FakeFez
-        # y permite que la prueba de integración corra en CPU/RAM modestos.
+        # Local 8-qubit backend: avoids expanding circuits to all 156 FakeFez wires
+        # and lets the integration check run with modest CPU/RAM resources.
         from qiskit.providers.fake_provider import GenericBackendV2
         from qiskit.transpiler import CouplingMap
         return GenericBackendV2(
@@ -454,14 +454,14 @@ def _job_usage(job):
             except Exception: pass
     return None, False
 
-USED_S = 0.0   # cuenta QPU acumulada (reportada por IBM; estimada si falta)
+USED_S = 0.0   # cumulative QPU account time (reported by IBM; estimated if unavailable)
 
 def execute_pubs(tcs, shots_list, label):
-    """Un job con lista de PUBs. Aplica el tope duro ANTES de lanzar."""
+    """Run one job containing PUBs. Enforce the hard cap BEFORE submission."""
     global USED_S
     est = est_job_s(shots_list)
     if GUARD.state == "AUTHORIZED":
-        GUARD.transition("RUNNING", reason="primer trabajo aprobado por el guardián")
+        GUARD.transition("RUNNING", reason="first job approved by the guard")
     request_bytes = json.dumps({
         "label": label, "mode": MODE, "backend": BACKEND_NAME,
         "shots": [int(x) for x in shots_list], "circuit_count": len(tcs),
@@ -469,7 +469,7 @@ def execute_pubs(tcs, shots_list, label):
     GUARD.send("eqg->simulator" if MODE == "sim" else "eqg->backend",
                "job_request", request_bytes, visibility="private")
     if USED_S + est > HARD_CAP_S:
-        raise RuntimeError("Tope duro: %.2f usados + %.2f estimados > %.1f s. No se lanza %s" % (USED_S, est, HARD_CAP_S, label))
+        raise RuntimeError("Hard cap: %.2f used + %.2f estimated > %.1f s. Not submitting %s" % (USED_S, est, HARD_CAP_S, label))
     t0 = time.time()
     if MODE == "sim":
         from qiskit_aer import AerSimulator
@@ -481,7 +481,7 @@ def execute_pubs(tcs, shots_list, label):
         from qiskit_ibm_runtime import SamplerV2
         job = SamplerV2(mode=backend).run([(tc, None, int(s)) for tc, s in zip(tcs, shots_list)])
         jid = job.job_id(); print("  job %s: %s" % (label, jid))
-        print("  (esperando cola/ejecucion; status cada 30s; no cancelar si QUEUED/RUNNING)", flush=True)
+        print("  (waiting in queue or running; status every 30s; do not cancel solely for QUEUED/RUNNING)", flush=True)
         t_last = time.time()
         while True:
             st = job.status()
@@ -492,11 +492,11 @@ def execute_pubs(tcs, shots_list, label):
                 _try(lambda: job.cancel())
                 raise TimeoutError(label)
             if time.time() - t_last >= 30.0:
-                print("  … %s status=%s  waited=%.0fs  (cola ≠ cuenta QPU)" % (
+                print("  … %s status=%s  waited=%.0fs (queue time ≠ QPU account time)" % (
                     label, nm, time.time() - t0), flush=True)
                 t_last = time.time()
             time.sleep(2)
-        if nm != "DONE": raise RuntimeError("job %s en estado %s" % (jid, nm))
+        if nm != "DONE": raise RuntimeError("job %s ended with status %s" % (jid, nm))
         res = job.result(); counts = []
         for i in range(len(tcs)):
             data = res[i].data; c = None
@@ -517,7 +517,7 @@ def execute_pubs(tcs, shots_list, label):
     USED_S += float(u)
     info = {"label": label, "job_id": jid, "usage_s": float(u), "usage_real": real, "est_s": est, "used_acum_s": USED_S}
     _job_log.append(info)
-    print("  [%s] uso=%.2fs (%s) est=%.2fs acumulado=%.2fs" % (label, u, "IBM" if real else "estimado", est, USED_S))
+    print("  [%s] usage=%.2fs (%s) estimated=%.2fs cumulative=%.2fs" % (label, u, "IBM" if real else "estimated", est, USED_S))
     return counts, info
 
 def snapshot_job(tag, variants):
@@ -531,11 +531,11 @@ def snapshot_job(tag, variants):
     for name, layout, dd in spec:
         cts = {k: counts[i + j] for j, k in enumerate(KINDS_FULL)}; i += len(KINDS_FULL)
         a = analyze_snap(cts, layout, CAL0); a.update({"name": name, "dd": bool(dd)}); out[name] = a
-        print("   %-5s s=%.3f+-%.3f s_rel=%.3f e0=%.3f marcados=%s" % (name, a["mean_s"], a["se_mean_s"], a["mean_rel"], a["mean_e0"], a["flagged"]))
+        print("   %-5s s=%.3f+-%.3f s_rel=%.3f e0=%.3f flagged=%s" % (name, a["mean_s"], a["se_mean_s"], a["mean_rel"], a["mean_e0"], a["flagged"]))
     return {"tag": tag, "variants": out, "info": info}
 
 
-assert CONFIRM_SPEND or MODE == "sim", "Pon CONFIRM_SPEND = True para gastar cuenta QPU (estimado %.1f s)." % EST_TOTAL
+assert CONFIRM_SPEND or MODE == "sim", "Set CONFIRM_SPEND = True to use QPU account time (estimated %.1f s)." % EST_TOTAL
 backend = get_backend()
 BACKEND = getattr(backend, "name", str(backend))
 NQ = int(getattr(backend, "num_qubits", 156)); ALLQ = list(range(NQ))
@@ -546,8 +546,8 @@ HEALTH0 = {q: cal_health(CAL0[q]["t1_us"], CAL0[q]["t2_us"], CAL0[q]["ro"]) for 
 reflejos = Reflejos()
 _m = reflejos.select(HEALTH0, EDGES_HW, EDGE_ERR, N_QAOA)
 LAYOUT_C = list(_m["selected"]); LAYOUT_A = list(range(N_QAOA))
-print("Calibracion:", CAL_STAMP0)
-print("Layout A (ingenuo):", LAYOUT_A, " Layout C/D (calibracion):", LAYOUT_C, " conectado:", layout_connected(LAYOUT_C, EDGES_HW))
+print("Calibration:", CAL_STAMP0)
+print("Layout A (naive):", LAYOUT_A, " Layout C/D (calibration):", LAYOUT_C, " connected:", layout_connected(LAYOUT_C, EDGES_HW))
 
 def blend_health(hm0, layout, snap):
     hm = dict(hm0)
@@ -599,7 +599,7 @@ def run_block(bi, order, layout_e, dd_e):
     delay, unit = probe_delay(backend)
     snap_tc = transpile(snap_circuits(N_QAOA, delay, unit, False), backend, initial_layout=list(layout_e), optimization_level=1, seed_transpiler=SEED)
     tcs += list(snap_tc); shots += [SHOTS_SNAP_LIGHT] * len(snap_tc)
-    print("[bloque %d] orden=%s  E: layout=%s DD=%s  CZ/circ=%s" % (bi + 1, "".join(order) * REPS_PER_BLOCK, layout_e, dd_e, cz_count))
+    print("[block %d] order=%s  E: layout=%s DD=%s  CZ/circuit=%s" % (bi + 1, "".join(order) * REPS_PER_BLOCK, layout_e, dd_e, cz_count))
     counts, info = execute_pubs(tcs, shots, "bloque%d" % (bi + 1))
     for idx, (arm, rep) in enumerate(items):
         w = analyze_work(counts[idx]); w.update({"arm": arm, "block": bi, "rep": rep, "pos": idx, "layout": list(cfg[arm][0]), "dd": cfg[arm][1]})
@@ -615,8 +615,8 @@ for bi, order in enumerate(BLOCK_ORDERS):
     if bi < len(BLOCK_ORDERS) - 1:
         pl = reaction(LAYOUT_E, snap_e); plans_E.append(pl)
         if pl["tipo"] == "abortar":
-            print("Juicio: ABORTAR -> se detiene"); break
-        print("E reaccion: %s | DD=%s | layout=%s | %s" % (pl["tipo"], pl["activate_dd"], pl["layout"], pl["reason"]))
+            print("Judgment: ABORT -> stopping"); break
+        print("E response: %s | DD=%s | layout=%s | %s" % (pl["tipo"], pl["activate_dd"], pl["layout"], pl["reason"]))
         LAYOUT_E, DD_E = list(pl["layout"]), bool(pl["activate_dd"])
 
 
@@ -642,32 +642,32 @@ def contrast(X, Y):
     sd = float(d.std(ddof=1)) if len(d) > 1 else float("nan")
     t = dm / (sd / math.sqrt(len(d))) if sd and sd == sd and sd > 0 else float("nan")
     npos = int((d > 0).sum())
-    v = "SOPORTADO" if (z >= Z_SIG and npos == len(d)) else ("SIGNO_OPUESTO" if (z <= -Z_SIG and npos == 0) else "NO_CONCLUYENTE")
+    v = "SUPPORTED" if (z >= Z_SIG and npos == len(d)) else ("OPPOSITE_SIGN" if (z <= -Z_SIG and npos == 0) else "INCONCLUSIVE")
     return {"contrast": "%s-%s" % (X, Y), "delta": dm, "se": se_p, "z_shots": z, "t_replicas": t, "positivas": "%d/%d" % (npos, len(d)),
             "por_replica": d.tolist(), "veredicto": v}
 
 STATS = {a: arm_stats(a) for a in "ACDE"}
-print("=" * 78 + "\nAR por brazo (ideal %.4f)\n" % IDEAL["ar"] + "=" * 78)
+print("=" * 78 + "\nAR by arm (ideal %.4f)\n" % IDEAL["ar"] + "=" * 78)
 for a in "ACDE":
     s = STATS[a]
-    print("%s  AR=%.4f+-%.4f  P(opt)=%.3f  shots=%d  por bloque=%s" % (a, s["ar"], s["se"], s["p_opt"], s["shots"],
+    print("%s  AR=%.4f+-%.4f  P(opt)=%.3f  shots=%d  by block=%s" % (a, s["ar"], s["se"], s["p_opt"], s["shots"],
           {b: round(v, 4) for b, v in s["by_block"].items()}))
 CONTRASTS = [contrast(*p) for p in (("C", "A"), ("D", "C"), ("E", "C"), ("E", "D"), ("E", "A"))]
-print("\n" + "=" * 78 + "\nContrastes (pre-registrado: z>=2 y signo + en todas las replicas)\n" + "=" * 78)
+print("\n" + "=" * 78 + "\nContrasts (preregistered: z>=2 and positive sign in every replicate)\n" + "=" * 78)
 for c in CONTRASTS:
     print("%-4s delta=%+.4f+-%.4f z=%+.1f t_rep=%+.1f positivas=%s  -> %s" % (
         c["contrast"], c["delta"], c["se"], c["z_shots"], c["t_replicas"], c["positivas"], c["veredicto"]))
 
-print("\nPulsos DD insertados (acum. por brazo):", dd_pulses, " | CZ por circuito:", cz_count)
-print("Trayectoria de E:", [(p["tipo"], p["activate_dd"], p["layout"]) for p in plans_E])
-print("E layout final: %s (DD=%s)" % (LAYOUT_E, DD_E))
-print("e0 PRE:", {k: round(v["mean_e0"], 3) for k, v in snap_pre["variants"].items()})
-print("e0 POST:", {k: round(v["mean_e0"], 3) for k, v in snap_post["variants"].items()})
-print("\nCuenta QPU: usada=%.2f s (reportada IBM en %d/%d jobs) | estimada=%.2f s | tope=%.1f s | restante aprox=%.1f s" % (
+print("\nDD pulses inserted (cumulative by arm):", dd_pulses, " | CZ per circuit:", cz_count)
+print("E trajectory:", [(p["tipo"], p["activate_dd"], p["layout"]) for p in plans_E])
+print("Final E layout: %s (DD=%s)" % (LAYOUT_E, DD_E))
+print("PRE e0:", {k: round(v["mean_e0"], 3) for k, v in snap_pre["variants"].items()})
+print("POST e0:", {k: round(v["mean_e0"], 3) for k, v in snap_post["variants"].items()})
+print("\nQPU account time: used=%.2f s (reported by IBM for %d/%d jobs) | estimated=%.2f s | cap=%.1f s | approx. remaining=%.1f s" % (
     USED_S, sum(j["usage_real"] for j in _job_log), len(_job_log), EST_TOTAL, HARD_CAP_S, QPU_REMAINING_S - USED_S))
 
 
-GUARD.transition("VERIFYING", reason="ejecución finalizada; validar artefactos y cifrar resultados")
+GUARD.transition("VERIFYING", reason="execution finished; validate artifacts and encrypt results")
 report = {"experiment": "EQG ablation ABBA N=8 p=2", "run_id": RUN_ID, "owner_id": RUN_OWNER,
           "guard": GUARD.snapshot(), "calibration": CAL_STAMP0, "layouts": {"A": LAYOUT_A, "C": LAYOUT_C, "E_end": LAYOUT_E},
           "ideal": IDEAL, "stats": STATS, "contrasts": CONTRASTS, "works": works, "plans_E": plans_E, "dd_pulses": dd_pulses,
@@ -677,7 +677,7 @@ report_meta = write_encrypted_artifact(
     OUT / "report.eqg.enc", report_bytes, KEY_INFO, artifact_name="report.json"
 )
 if decrypt_artifact((OUT / "report.eqg.enc").read_bytes(), KEY_PATH, requester_id=RUN_OWNER) != report_bytes:
-    raise RuntimeError("Falló la verificación independiente de ida y vuelta del reporte cifrado")
+    raise RuntimeError("Independent round-trip verification of the encrypted report failed")
 GUARD.send("eqg->private-store", "encrypted_report", (OUT / "report.eqg.enc").read_bytes(), visibility="private")
 col = {"A": "#c0392b", "C": "#e67e22", "D": "#16a085", "E": "#2980b9"}
 fig, ax = plt.subplots(1, 2, figsize=(13, 4.5))
@@ -686,10 +686,10 @@ for k, a in enumerate("ACDE"):
     ax[0].errorbar([k + 0.08 * (w["block"] * 2 + w["rep"] - 1.5) for w in ws], [w["ar"] for w in ws], yerr=[w["se_ar"] for w in ws],
                    fmt="o", color=col[a], capsize=3)
     ax[0].hlines(STATS[a]["ar"], k - 0.25, k + 0.25, color=col[a])
-ax[0].axhline(IDEAL["ar"], color="gray", ls="--"); ax[0].set_xticks(range(4)); ax[0].set_xticklabels(["A ingenuo", "C calib.", "D calib.+DD", "E EQG"])
-ax[0].set_ylabel("AR"); ax[0].set_title("AR por brazo (puntos = replicas)")
+ax[0].axhline(IDEAL["ar"], color="gray", ls="--"); ax[0].set_xticks(range(4)); ax[0].set_xticklabels(["A naive", "C calibrated", "D calibrated+DD", "E EQG"])
+ax[0].set_ylabel("AR"); ax[0].set_title("AR by arm (points = replicates)")
 ax[1].barh([c["contrast"] for c in CONTRASTS], [c["delta"] for c in CONTRASTS], xerr=[2 * c["se"] for c in CONTRASTS], color="#7f8c8d")
-ax[1].axvline(0, color="k"); ax[1].set_xlabel("delta AR (barra = 2 SE de shots)"); ax[1].set_title("Contrastes")
+ax[1].axvline(0, color="k"); ax[1].set_xlabel("delta AR (bar = 2 shot SE)"); ax[1].set_title("Contrasts")
 plt.tight_layout(); plot_tmp = OUT / ".ablation.private.tmp.png"
 fig.savefig(plot_tmp, dpi=140, bbox_inches="tight")
 plot_bytes = plot_tmp.read_bytes()
@@ -697,17 +697,17 @@ plot_meta = write_encrypted_artifact(
     OUT / "ablation.eqg.enc", plot_bytes, KEY_INFO, artifact_name="ablation.png"
 )
 if decrypt_artifact((OUT / "ablation.eqg.enc").read_bytes(), KEY_PATH, requester_id=RUN_OWNER) != plot_bytes:
-    raise RuntimeError("Falló la verificación independiente de ida y vuelta de la figura cifrada")
+    raise RuntimeError("Independent round-trip verification of the encrypted figure failed")
 plot_tmp.unlink()
 GUARD.send("eqg->private-store", "encrypted_plot", (OUT / "ablation.eqg.enc").read_bytes(), visibility="private")
-GUARD.transition("PACKAGED", reason="artefactos privados cifrados y verificados")
-print("Guardado en", OUT, "| run_id=", RUN_ID, "| clave privada=", KEY_PATH)
+GUARD.transition("PACKAGED", reason="private artifacts encrypted and verified")
+print("Saved to", OUT, "| run_id=", RUN_ID, "| private key=", KEY_PATH)
 
 
 _required = [OUT / "report.eqg.enc", OUT / "ablation.eqg.enc"]
 _missing = [str(p) for p in _required if not p.is_file() or p.stat().st_size == 0]
 if _missing:
-    raise RuntimeError("EQG incompleto; faltan artefactos: " + ", ".join(_missing))
+    raise RuntimeError("EQG output is incomplete; missing artifacts: " + ", ".join(_missing))
 (OUT / "run_manifest.json").write_text(json.dumps({
     "schema_version": "eqg.private-run-manifest.v1",
     "run_id": RUN_ID,
@@ -718,4 +718,4 @@ if _missing:
     "integrity_status": "encrypted_and_roundtrip_verified_not_csg_signed"
 }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 print("EQG_PIPELINE_COMPLETED")
-print("Artefactos verificados:", ", ".join(str(p) for p in _required), "y", OUT / "run_manifest.json")
+print("Verified artifacts:", ", ".join(str(p) for p in _required), "and", OUT / "run_manifest.json")
