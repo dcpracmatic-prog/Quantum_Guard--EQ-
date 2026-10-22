@@ -20,7 +20,7 @@ BASES = ("X", "Y")
 class Timing:
     """Backend timing constraints (all values are in dt units)."""
     dt: float                 # segundos por muestra
-    granularity: int = 16     # multiplo obligatorio de duracion de delay
+    granularity: int = 16     # required multiple for delay duration
     min_length: int = 64
     x_duration_dt: int = 0    # duration of an X/Y pulse (for effective time)
 
@@ -166,10 +166,10 @@ def build_relay_reference(t_us: float, n_spectators: int, timing: Timing, target
 
 def default_time_grid(t2_ref_us: float, fractions: Sequence[float] | None = None, t_max_us: float = 450.0,
                       dense_us: Sequence[float] | None = None):
-    """Rejilla en dos tramos:
+    """Two-segment time grid:
     - dense absolute segment (step <= 5 us up to 40 us): resolves phase without aliasing for |detuning| < ~100 kHz
-      (en v2/v3 el paso era de 26-130 us y el detuning real de ~27 kHz aparecia como ~54 kHz);
-    - tramo escalado a T2 calibrado (0.2x .. 1.6x): resuelve la envolvente y beta."""
+      (in v2/v3, 26–130 µs steps aliased the actual ~27 kHz detuning to ~54 kHz);
+    - segment scaled to calibrated T2 (0.2x–1.6x): resolves the envelope and beta."""
     if dense_us is None:
         dense_us = [2, 5, 10, 15, 20, 25, 30, 40]
     if fractions is None:
@@ -177,7 +177,7 @@ def default_time_grid(t2_ref_us: float, fractions: Sequence[float] | None = None
     grid = set(float(t) for t in dense_us)
     grid |= set(round(min(f * t2_ref_us, t_max_us), 1) for f in fractions)
     grid = sorted(g for g in grid if g > 0)
-    # elimina puntos casi duplicados (< 3 us)
+    # Remove near-duplicate points (<3 us).
     out = []
     for g in grid:
         if not out or g - out[-1] >= 3.0:

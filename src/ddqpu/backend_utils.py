@@ -63,7 +63,7 @@ def _qubit_info(backend, q: int) -> Optional[QubitInfo]:
 
     sx = err("sx") or err("x") or 1e-2
     ro = err("measure") or 5e-2
-    # T2 > 2*T1 no es fisico: calibracion sospechosa, se recorta
+    # T2 > 2*T1 is unphysical: calibration may be suspect, so the value is capped
     t2_eff = min(t2, 2.0 * t1)
     score = t2_eff / (1.0 + 50.0 * sx + 10.0 * ro)
     return QubitInfo(q, t1, t2, sx, ro, score)
@@ -147,7 +147,7 @@ def transpile_locked(circuits, backend, layout: Layout, optimization_level: int 
 
 
 def verify_no_relay(transpiled, layout: Layout) -> dict:
-    """Verificacion estructural de relevos.
+    """Structural relay verification.
     - Count two-qubit gates (a transpiled SWAP appears as three CZ/ECR gates, not as 'swap').
     - Verify the initial and final layout of every logical qubit.
     - Verify that measurement of bit 0 occurs on the physical target qubit."""
@@ -178,7 +178,7 @@ def verify_no_relay(transpiled, layout: Layout) -> dict:
 
 
 def estimate_qpu_seconds(specs, backend, rep_delay_s: Optional[float] = None) -> float:
-    """Estimacion aproximada: sum(shots * (t_efectivo + medicion + rep_delay)) + ~2 s de overhead."""
+    """Approximate runtime: sum(shots * (effective time + measurement + rep_delay)) + ~2 s overhead."""
     if rep_delay_s is None:
         rep_delay_s = getattr(backend, "default_rep_delay", None) or 250e-6
     try:

@@ -19,7 +19,7 @@ def wmean(v, e):
     chi = float(np.sum(w * (v - m)**2) / max(len(v) - 1, 1)) if len(v) > 1 else 0.0
     return float(m), float(se * math.sqrt(max(chi, 1.0))), chi
 
-# 1) clasificacion por estado: umbral en T2* (separacion > 10 sigma entre grupos)
+# 1) State classification: T2* threshold (>10 sigma separation between groups)
 good = [r for r in runs if r["free"][0] > 100]
 bad = [r for r in runs if r["free"][0] <= 100]
 out = {"estados": {}}
@@ -47,7 +47,7 @@ for k, lab in (("free", "Free T2* (µs)"), ("cpmg", "CPMG T2 (µs)"), ("xy4", "X
                ("ext_cpmg", "CPMG/free extension"), ("ext_xy4", "XY4/free extension")):
     lines.append(f"| {lab} | {g[k][0]:.2f} ± {g[k][1]:.2f} (χ²={g[k][2]:.1f}) | {b[k][0]:.2f} ± {b[k][1]:.2f} (χ²={b[k][2]:.1f}) |")
 
-# 2) tasas: exceso de desfase que agrega el estado degradado y fraccion que elimina el DD
+# 2) Rates: excess dephasing in the degraded state and fraction removed by DD
 def rate(T, e):
     return 1e3 / T, 1e3 * e / T**2   # 1/ms
 exc = {}
@@ -65,7 +65,7 @@ for p in ("cpmg", "xy4"):
     ef = abs(exc[p][0] / exc["free"][0]) * math.hypot(exc[p][1] / exc[p][0], exc["free"][1] / exc["free"][0])
     out[f"fraccion_exceso_eliminada_{p}"] = (f, ef)
     lines.append(f"\n{p.upper()} removes {100*f:.0f} ± {100*ef:.0f}% of the excess dephasing in the degraded state.")
-# 3) correlacion detuning vs tasa libre
+# 3) Correlation between detuning and free-evolution dephasing rate
 det = np.array([r["det_kHz"][0] for r in runs]); rfree = np.array([1e3 / r["free"][0] for r in runs])
 cc = float(np.corrcoef(np.abs(det), rfree)[0, 1])
 out["corr_absdet_vs_rate_free"] = cc

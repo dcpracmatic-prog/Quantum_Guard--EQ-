@@ -159,7 +159,7 @@ def run_probe(backend, candidates: Sequence[int], out_dir: Path, pc: ProbeConfig
     return manifest, counts
 
 
-# ------------------------------------------------------------------ analisis
+# ------------------------------------------------------------------ analysis
 def _fit_fixed_amp(t, y, se, amp):
     """Fit y = amp * exp(-t/T): estimate T with weighted least squares in log space."""
     t, y, se = map(lambda a: np.asarray(a, float), (t, y, se))
@@ -304,13 +304,17 @@ def compensate_detuning(qc: QuantumCircuit, detuning_kHz: Dict[int, float], dt: 
 
 
 def summarize_probe(backend_name: str, probe: Dict[int, dict], verdicts: Dict[int, dict], cost: dict) -> str:
-    L = [f"Centinela | backend={backend_name} | costo ~{cost['qpu_s']:.1f} s QPU (~USD {cost['usd']:.2f} a precio PAYG)"]
+    L = [f"Sentinel | backend={backend_name} | cost ~{cost['qpu_s']:.1f} s QPU (~USD {cost['usd']:.2f} at PAYG rates)"]
     L.append(f"{'q':>5} {'T2*':>8} {'echo T2':>8} {'T1':>8} {'detuning':>10} {'state':>10}  action")
+    state_labels = {"estable": "stable", "degradado": "degraded", "sin_datos": "no data"}
+    action_labels = {"ejecutar": "execute", "re-sondear": "probe again",
+                     "cambiar de qubit o esperar y re-sondear; si se ejecuta, activar DD":
+                         "switch qubits or wait and probe again; if executing, enable DD"}
     for q in rank_live(probe, verdicts):
         r, v = probe[q], verdicts[q]
         fmt = lambda x: f"{x:8.1f}" if x else "     n/a"  # noqa: E731
         det = f"{r['detuning_kHz']:+9.2f}k" if r.get("detuning_kHz") is not None else "       n/a"
-        L.append(f"{q:>5} {fmt(r.get('T2star_us'))} {fmt(r.get('T2echo_us'))} {fmt(r.get('T1_us'))} {det} {v['estado']:>10}  {v['accion']}")
+        L.append(f"{q:>5} {fmt(r.get('T2star_us'))} {fmt(r.get('T2echo_us'))} {fmt(r.get('T1_us'))} {det} {state_labels.get(v['estado'], v['estado']):>10}  {action_labels.get(v['accion'], v['accion'])}")
     return "\n".join(L)
 
 

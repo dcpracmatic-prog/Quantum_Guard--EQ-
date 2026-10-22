@@ -82,11 +82,11 @@ def run_batch(cfg: Config, backend, circs, specs, layout, out_dir: Path, mode: s
     from qiskit_ibm_runtime import SamplerV2
     tcs, report = transpile_locked(circs, backend, layout, cfg.optimization_level)
     if not report["ok"]:
-        raise RuntimeError("Verificacion estructural fallo (posible relevo):\n" + "\n".join(report["issues"][:10]))
+        raise RuntimeError("Structural verification failed (possible relay):\n" + "\n".join(report["issues"][:10]))
     est = estimate_qpu_seconds(specs, backend)
     print(f"Circuits: {len(tcs)} | total shots: {sum(s.shots for s in specs)} | estimated QPU time ~{est:.0f} s")
     if mode == "hardware" and est > cfg.max_qpu_seconds:
-        raise RuntimeError(f"Estimacion {est:.0f}s > max_qpu_seconds={cfg.max_qpu_seconds}. Reduce shots o puntos.")
+        raise RuntimeError(f"Estimated runtime {est:.0f}s > max_qpu_seconds={cfg.max_qpu_seconds}. Reduce shots or time points.")
     sampler = SamplerV2(mode=backend)
     pubs = [(tc, None, s.shots) for tc, s in zip(tcs, specs)]
     job = sampler.run(pubs)
@@ -99,7 +99,7 @@ def run_batch(cfg: Config, backend, circs, specs, layout, out_dir: Path, mode: s
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=1))
     t0 = time.time()
     result = job.result()
-    print(f"Job completado en {time.time() - t0:.0f} s (incluye cola)")
+    print(f"Job completed in {time.time() - t0:.0f} s (including queue time)")
     counts = [A.counts_from_pub(result[i]) for i in range(len(specs))]
     save_counts(out_dir, manifest, counts)
     return manifest, counts
@@ -161,7 +161,7 @@ def analyze(manifest: dict, counts: list) -> dict:
             r, er = A.ratio_with_err(fp["T2"], fp["T2_err"], ff["T2"], ff["T2_err"])
             ext[p] = {"ratio": r, "err": er, "significant": bool(r - 1 > 2 * er)}
     out["extension"] = ext
-    # Relevos
+    # Relays
     nb_bits = list(range(1, 1 + len(lay["neighbors"])))
     rs = A.relay_statistics(recs, nb_bits, n_bits - 1)
     out["relay"] = rs
@@ -203,27 +203,27 @@ def summarize(res: dict, manifest: dict) -> str:
     L = []
     lay = manifest["layout"]
     L.append(f"Backend={manifest['backend']}  target=q{lay['target']} (calibrated T2={lay['target_t2_us']:.1f} us, "
-             f"T1 cal={lay['target_t1_us']:.1f} us)  vecinos={lay['neighbors']}  control=q{lay['control']}  "
+             f"calibrated T1={lay['target_t1_us']:.1f} us)  neighbors={lay['neighbors']}  control=q{lay['control']}  "
              f"job={manifest['job_id']}")
     L.append(f"Target readout error: P(1|0)={res['readout']['e0'][0]:.4f}  P(0|1)={res['readout']['e1'][0]:.4f}")
     for p in PROTOCOLS:
         f = res["fits"][p]
         if f:
-            tag = "" if f["reliable"] else "  [baja confianza]"
+            tag = "" if f["reliable"] else "  [low confidence]"
             L.append(f"T2[{p:>4}] = {f['T2']:7.1f} +/- {f['T2_err']:5.1f} us  beta={f['beta']:.2f}+/-{f['beta_err']:.2f}"
                      f"  chi2_red={f['chi2_red']:.1f}{tag}")
         else:
             L.append(f"T2[{p:>4}] = no fit")
     d = res.get("detuning")
     if d:
-        L.append(f"Detuning (fase desenvuelta, {d['n_points']} pts hasta {d['t_max_us']:.0f} us): "
+        L.append(f"Detuning (unwrapped phase, {d['n_points']} points up to {d['t_max_us']:.0f} us): "
                  f"{d['f_kHz']:+.2f} +/- {d['f_err_kHz']:.2f} kHz")
     for p, e in res["extension"].items():
-        L.append(f"Extension {p}/libre = {e['ratio']:.2f} +/- {e['err']:.2f}  -> "
-                 f"{'significativa (>2 sigma)' if e['significant'] else 'NO significativa'}")
+        L.append(f"Extension {p}/free = {e['ratio']:.2f} +/- {e['err']:.2f}  -> "
+                 f"{'significant (>2 sigma)' if e['significant'] else 'NOT significant'}")
     rv = res["relay_verdict"]
-    L.append("Relevos: " + ("DETECTADO en " + str(rv["flagged"]) if rv["relay_detected"] else
-                             f"no detectado; cota superior 95% de transferencia a vecinos = {rv['worst_upper95']*100:.3f} %"))
+    L.append("Relays: " + ("DETECTED in " + str(rv["flagged"]) if rv["relay_detected"] else
+                            f"not detected; 95% upper bound on transfer to neighbors = {rv['worst_upper95']*100:.3f}%"))
     for p, z in res.get("zz", {}).items():
         L.append(f"Effective ZZ (neighbors in |1>) with {p}: {z['zz_kHz']:+.2f} kHz")
     return "\n".join(L)

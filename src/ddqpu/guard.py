@@ -104,9 +104,9 @@ class FlowGuard:
         allow_community_publication: bool = False,
     ) -> None:
         if not run_id or not owner_id:
-            raise ValueError("run_id y owner_id son obligatorios")
+            raise ValueError("run_id and owner_id are required")
         if max_event_bytes < 1:
-            raise ValueError("max_event_bytes debe ser positivo")
+            raise ValueError("max_event_bytes must be positive")
         self.run_id = run_id
         self.owner_id = owner_id
         self.state = "INIT"
@@ -132,7 +132,7 @@ class FlowGuard:
 
     def transition(self, target: str, *, reason: str) -> None:
         if target not in _TRANSITIONS.get(self.state, set()):
-            self._fail(f"transición inválida: {self.state}->{target}")
+            self._fail(f"invalid state transition: {self.state}->{target}")
         self.audit_events.append({
             "event": "state_transition",
             "from": self.state,
@@ -150,21 +150,21 @@ class FlowGuard:
             "visibility", "payload_bytes", "payload_sha3_256",
         }
         if not isinstance(event, dict) or not required.issubset(event):
-            self._fail("esquema de evento incompleto")
+            self._fail("event schema is incomplete")
         if event["run_id"] != self.run_id:
             self._fail("run_id does not match the active run")
         if event["owner_id"] != self.owner_id:
             self._fail("owner does not match the active run")
         if type(event["sequence"]) is not int or event["sequence"] != self.sequence + 1:
-            self._fail("secuencia repetida, omitida o fuera de orden")
+            self._fail("sequence is repeated, skipped, or out of order")
         nonce = event["nonce"]
         if not isinstance(nonce, str) or len(nonce) < 16 or nonce in self._nonces:
-            self._fail("nonce inválido o repetido")
+            self._fail("nonce is invalid or repeated")
         channel = event["channel"]
         if channel not in self.allowed_channels:
             self._fail(f"unauthorized channel: {channel}")
         if event["visibility"] not in {"private", "public"}:
-            self._fail("visibilidad inválida")
+            self._fail("visibility is invalid")
         if event["visibility"] == "public":
             if channel != "eqg->community-index" or not self.allow_community_publication:
                 self._fail("community publication is not authorized by policy")
@@ -175,11 +175,11 @@ class FlowGuard:
         size = event["payload_bytes"]
         digest = event["payload_sha3_256"]
         if type(size) is not int or size < 0 or size > self.max_event_bytes:
-            self._fail("tamaño de evento fuera de límites")
+            self._fail("event size is out of bounds")
         if not isinstance(digest, str) or len(digest) != 64 or any(
             c not in "0123456789abcdef" for c in digest
         ):
-            self._fail("hash de payload inválido")
+            self._fail("payload hash is invalid")
         accepted = dict(event)
         accepted["timestamp_utc"] = datetime.now(timezone.utc).isoformat()
         self.audit_events.append({
@@ -201,9 +201,9 @@ class FlowGuard:
     ) -> dict[str, Any]:
         """Create and validate an in-process event before forwarding it."""
         if not isinstance(payload, bytes):
-            raise TypeError("payload debe ser bytes")
+            raise TypeError("payload must be bytes")
         if len(payload) > self.max_event_bytes:
-            self._fail("payload supera el límite del guardián")
+            self._fail("payload exceeds the guard limit")
         event = {
             "run_id": self.run_id,
             "owner_id": self.owner_id,
@@ -245,7 +245,7 @@ class FlowGuard:
     def verify_artifact(self, payload: bytes, expected_sha3_256: str) -> bool:
         actual = sha3_256(payload)
         if not secrets.compare_digest(actual, expected_sha3_256):
-            self._fail("hash del artefacto no coincide")
+            self._fail("artifact hash does not match")
         return True
 
     def meter_channel(
@@ -253,7 +253,7 @@ class FlowGuard:
     ) -> ChannelMeter:
         name = f"{source}->{destination}"
         if name in self.channel_meters:
-            self._fail(f"medidor de canal duplicado: {name}")
+            self._fail(f"duplicate channel meter: {name}")
         meter = ChannelMeter(source, destination, allowed, max_bytes)
         self.channel_meters[name] = meter
         return meter

@@ -272,13 +272,13 @@ def planificar(lh, layout, alt, cur_score):
                or lh["health_mean"] < HEALTH_STABLE or bool(flagged))
     remap = bool(flagged) and alt is not None and alt["score"] >= cur_score - REMAP_TOL and set(alt["selected"]) != set(layout)
     calm = (not need_dd) and (not flagged)
-    opts = [dict(tipo="ninguna", cost=0.0, gain=0.55 if calm else 0.0, reason="regimen estable; no intervenir" if calm else "no intervenir")]
+    opts = [dict(tipo="ninguna", cost=0.0, gain=0.55 if calm else 0.0, reason="stable regime; no intervention" if calm else "no intervention")]
     if need_dd:
-        opts.append(dict(tipo="dd_condicional", cost=0.25, gain=0.30 if flagged else 0.55, reason="DD condicional por coherencia/salud"))
+        opts.append(dict(tipo="dd_condicional", cost=0.25, gain=0.30 if flagged else 0.55, reason="conditional DD based on coherence/health"))
     if remap:
-        opts.append(dict(tipo="remap_morph", cost=0.40, gain=0.90, reason="qubits %s marcados; remap %s" % (flagged, alt["selected"])))
+        opts.append(dict(tipo="remap_morph", cost=0.40, gain=0.90, reason="flagged qubits %s; remap to %s" % (flagged, alt["selected"])))
     if lh["regime"] == "CONFLICTO" and lh["n_estable"] == 0:
-        opts.append(dict(tipo="abortar", cost=0.0, gain=0.1, reason="CONFLICTO sin qubits estables"))
+        opts.append(dict(tipo="abortar", cost=0.0, gain=0.1, reason="CONFLICT: no stable qubits"))
     elig = [o for o in opts if o["gain"] >= TARGET_INTEGRITY]
     ch = min(elig, key=lambda o: o["cost"]) if elig else max(opts, key=lambda o: o["gain"] / max(o["cost"], 0.01))
     t = ch["tipo"]
@@ -557,7 +557,7 @@ def blend_health(hm0, layout, snap):
 
 ojos_E = Ojos()
 def reaction(layout, snap):
-    """Ojos(medida) -> Reflejos(alternativa, con memoria) -> Juicio. Devuelve plan."""
+    """Eyes (measurement) -> Reflexes (alternative with memory) -> Judgment. Return a plan."""
     hm = blend_health(HEALTH0, layout, snap)
     lh = ojos_E.observe(layout, hm, rel_mean=snap["mean_rel"], flagged=snap["flagged"])
     reflejos.blacklist |= set(snap["flagged"])
@@ -571,7 +571,7 @@ print("=" * 60 + "\nPRE\n" + "=" * 60)
 snap_pre = snapshot_job("PRE", [("C", LAYOUT_C, False), ("C+DD", LAYOUT_C, True), ("A", LAYOUT_A, False)])
 plan0 = reaction(LAYOUT_C, snap_pre["variants"]["C"])
 if plan0["tipo"] == "abortar":
-    raise RuntimeError("Juicio abortó en PRE: " + plan0["reason"])
+    raise RuntimeError("Judgment aborted during PRE: " + plan0["reason"])
 LAYOUT_E, DD_E = list(plan0["layout"]), bool(plan0["activate_dd"])
 print("E plan inicial: %s | DD=%s | layout=%s | %s" % (plan0["tipo"], DD_E, LAYOUT_E, plan0["reason"]))
 

@@ -10,7 +10,7 @@ from scipy.optimize import curve_fit
 from scipy.stats import norm
 
 
-# ---------------------------------------------------------------- conteos
+# ---------------------------------------------------------------- counts
 def counts_from_pub(pub) -> dict:
     data = pub.data
     for key in ("c", "meas"):
@@ -36,7 +36,7 @@ def bit_counts(counts: dict, bit: int):
     return n0, n1
 
 
-# ---------------------------------------------------------------- lectura
+# ---------------------------------------------------------------- readout
 def readout_errors(cal0: dict, cal1: dict, n_bits: int):
     """Return per-qubit e0[b] = P(1|0), e1[b] = P(0|1) from same-job calibration circuits."""
     e0, e1 = [], []
@@ -60,7 +60,7 @@ def mitigated_expectation(counts: dict, bit: int, e0: float, e1: float):
     return ez, se
 
 
-# ---------------------------------------------------------------- coherencia
+# ---------------------------------------------------------------- coherence
 def coherence_from_xy(x, y, sx, sy):
     """Return |rho01| = sqrt(<X>^2 + <Y>^2), shot-noise bias correction, and phase."""
     x, y, sx, sy = map(lambda a: np.asarray(a, float), (x, y, sx, sy))
@@ -140,10 +140,10 @@ def ratio_with_err(a, ea, b, eb):
     return r, abs(r) * math.sqrt((ea / a) ** 2 + (eb / b) ** 2)
 
 
-# ---------------------------------------------------------------- relevos
+# ---------------------------------------------------------------- relays
 def two_proportion_test(k1, n1, k0, n0):
     """Compute the proportion difference (p1 - p0), error, z, and one-sided p-value (p1 > p0)
-    y cota superior al 95%."""
+    and the one-sided 95% upper bound."""
     p1, p0 = k1 / max(n1, 1), k0 / max(n0, 1)
     p = (k1 + k0) / max(n1 + n0, 1)
     se_pool = math.sqrt(max(p * (1 - p), 1e-12) * (1 / max(n1, 1) + 1 / max(n0, 1)))
@@ -182,7 +182,7 @@ def relay_statistics(records: List[dict], neighbor_bits: Sequence[int], control_
 
 def relay_verdict(stats: dict, alpha: float = 0.01, max_transfer: float = 0.005) -> dict:
     """A relay is detected if any neighbor shows a significant excess in P(1) (p < alpha, with
-    Bonferroni) Y de magnitud relevante (> max_transfer). Si no, se reporta la cota superior."""
+    Bonferroni correction) and a relevant magnitude (> max_transfer). Otherwise, report the upper bound."""
     tests = [(lab, key, s[key]) for lab, s in stats.items() if lab.startswith("vecino")
              for key in ("activo_vs_idle", "excitado_vs_idle")]
     m = max(len(tests), 1)

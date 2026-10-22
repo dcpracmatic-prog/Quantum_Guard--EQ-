@@ -94,7 +94,7 @@ def encrypt_artifact(
     plaintext: bytes, key_info: dict[str, Any], *, artifact_name: str
 ) -> bytes:
     if not isinstance(plaintext, bytes):
-        raise TypeError("plaintext debe ser bytes")
+        raise TypeError("plaintext must be bytes")
     run_id, owner_id, key = key_info["run_id"], key_info["owner_id"], key_info["key"]
     header = {
         "schema_version": SCHEMA,
@@ -181,7 +181,7 @@ def _cli() -> int:
             os.chmod(target, 0o600)
         except OSError:
             pass
-        print(f"Descifrado en ubicación privada: {target}")
+        print(f"Decrypted to private location: {target}")
         return 0
     return 2
 

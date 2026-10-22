@@ -45,8 +45,8 @@ def test_valid_state_machine_and_event():
 @pytest.mark.parametrize("changes,match", [
     ({"run_id": "someone-elses-run"}, "run_id"),
     ({"owner_id": "user-b"}, "owner"),
-    ({"sequence": 2}, "secuencia"),
-        ({"channel": "eqg->community-index", "visibility": "public"}, "community publication"),
+    ({"sequence": 2}, "sequence"),
+    ({"channel": "eqg->community-index", "visibility": "public"}, "community publication"),
     ({"payload_sha3_256": "not-a-hash"}, "hash"),
 ])
 def test_rejects_invalid_protocol_event(changes, match):
@@ -68,7 +68,7 @@ def test_rejects_replayed_nonce():
 
 def test_rejects_out_of_order_sequence():
     g = _guard()
-    with pytest.raises(GuardViolation, match="secuencia"):
+    with pytest.raises(GuardViolation, match="sequence"):
         g.accept_event(_event(g, seq=3))
 
 
