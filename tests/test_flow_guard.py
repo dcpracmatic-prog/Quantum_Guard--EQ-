@@ -44,9 +44,9 @@ def test_valid_state_machine_and_event():
 
 @pytest.mark.parametrize("changes,match", [
     ({"run_id": "someone-elses-run"}, "run_id"),
-    ({"owner_id": "user-b"}, "propietario"),
-    ({"sequence": 2}, "secuencia"),
-    ({"channel": "eqg->community-index", "visibility": "public"}, "publicación"),
+    ({"owner_id": "user-b"}, "owner"),
+    ({"sequence": 2}, "sequence"),
+    ({"channel": "eqg->community-index", "visibility": "public"}, "community publication"),
     ({"payload_sha3_256": "not-a-hash"}, "hash"),
 ])
 def test_rejects_invalid_protocol_event(changes, match):
@@ -68,7 +68,7 @@ def test_rejects_replayed_nonce():
 
 def test_rejects_out_of_order_sequence():
     g = _guard()
-    with pytest.raises(GuardViolation, match="secuencia"):
+    with pytest.raises(GuardViolation, match="sequence"):
         g.accept_event(_event(g, seq=3))
 
 
@@ -96,7 +96,7 @@ def test_send_records_authorized_channel_without_payload():
 
 def test_send_blocks_unauthorized_channel_before_forwarding():
     g = _guard()
-    with pytest.raises(GuardViolation, match="canal bloqueado"):
+    with pytest.raises(GuardViolation, match="channel is blocked"):
         g.send("eqg->external-spy", "exfiltration", b"private results")
     assert g.state == "QUARANTINED"
     assert g.channel_meters["eqg->external-spy"].delivered_bytes == 0
@@ -140,7 +140,7 @@ def test_publication_requires_explicit_policy():
     g.transition("PRECHECK", reason="test")
     g.transition("AUTHORIZED", reason="test")
     g.transition("RUNNING", reason="test")
-    with pytest.raises(GuardViolation, match="publicación"):
+    with pytest.raises(GuardViolation, match="community publication"):
         g.emit("eqg->community-index", "publish", b"benchmark", visibility="public")
 
 

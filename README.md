@@ -1,172 +1,172 @@
-[![EQG full pipeline Docker smoke test](https://github.com/dcpracmatic-prog/Edge_Quantum-_Guard_EQG/actions/workflows/docker-smoke.yml/badge.svg)](https://github.com/dcpracmatic-prog/Edge_Quantum-_Guard_EQG/actions/workflows/docker-smoke.yml)
+[![EQG full pipeline Docker smoke test](https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-/actions/workflows/docker-smoke.yml/badge.svg)](https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-/actions/workflows/docker-smoke.yml)
 # Edge Quantum Guard (EQG)
 
-**Edge Quantum Guard (EQG)** es una capa de control de bajo nivel entre una carga cuántica y el backend. Combina selección de layout, medición de salud, intervención condicional con dynamical decoupling (DD) y evaluación causal del resultado.
+**Edge Quantum Guard (EQG)** is a low-level control layer between a quantum workload and its backend. It combines layout selection, health measurement, conditional dynamical decoupling (DD), and causal outcome evaluation.
 
-Este repositorio contiene los experimentos EQG y el paquete `ddqpu`, usado para validar CPMG/XY4, coherencia y control de relevos. La evidencia que se resume aquí es **experimental y acotada**: no equivale a certificación de producto ni demuestra generalización a otros algoritmos, tamaños o proveedores.
+This repository contains EQG experiments and the `ddqpu` package, which is used to validate CPMG/XY4, coherence, and relay control. The evidence summarized here is **experimental and limited**: it is not product certification and does not demonstrate generalization to other algorithms, system sizes, or providers.
 
-> **Confidencialidad:** los informes PDF añadidos están marcados “Confidential”. El repositorio debe mantenerse privado salvo que tengas autorización para hacerlos públicos.
+> **Confidentiality:** The included PDF reports are marked “Confidential.” Keep this repository private unless you are authorized to make them public.
 
-## Cómo funciona EQG
+## How EQG works
 
-| Rol | Módulo | Función |
+| Role | Module | Function |
 |---|---|---|
-| Eyes | AOM / salud | Combina calibración y medición en vivo para estimar régimen y salud por qubit. |
-| Reflexes | MORPH | Selecciona un camino físico conectado según salud de qubit y error de compuertas CZ. |
-| Judgment | Plan de mínima acción + veredicto causal | Decide si mantener, remapear o activar DD condicional, y registra el motivo. |
-| Hands | DD + ejecución | Inserta CPMG/XY4 en ventanas ociosas y ejecuta la carga. |
+| Eyes | AOM / Health | Combines calibration and live measurements to estimate operating regime and per-qubit health. |
+| Reflexes | MORPH | Selects a connected physical path based on qubit health and CZ gate error rates. |
+| Judgment | Minimal-action plan + causal verdict | Decides whether to hold, remap, or conditionally enable DD, and records the reason. |
+| Hands | DD + execution | Inserts CPMG/XY4 into idle windows and executes the workload. |
 
-**Centinela** es una sonda complementaria que caracteriza estados de coherencia y ayuda a decidir cuándo DD podría aportar. Sus resultados motivan la política; no sustituyen la validación de cada backend.
+**Sentinel** is a complementary probe that characterizes coherence states and helps decide when DD may be useful. Its results inform the policy; they do not replace validation on each backend.
 
-## Evidencia experimental documentada
+## Documented experimental evidence
 
-Las corridas QAOA usan MaxCut sobre un camino de 8 nodos (`N=8`, `p=2`). El criterio preregistrado para la comparación A/B fue `z ≥ 2` sobre `AR` es la razón de aproximación; `ΔAR = AR(EQG) − AR(baseline)` y `EE` es el error estándar. Los valores de esta sección son los reportados en los informes adjuntos.
+The QAOA runs use MaxCut on an 8-node path (`N=8`, `p=2`). The preregistered criterion for the A/B comparison was `z ≥ 2` for `AR`, the approximation ratio; `ΔAR = AR(EQG) − AR(baseline)` and `SE` is the standard error. The values in this section are those reported in the attached reports.
 
-### IBM Quantum `ibm_fez`: orden cruzado
+### IBM Quantum `ibm_fez`: crossover order
 
-| Corrida | Orden | Presupuesto por brazo | AR con EQG | AR baseline | ΔAR ± EE | z |
+| Run | Order | Budget per arm | AR with EQG | Baseline AR | ΔAR ± SE | z |
 |---|---|---:|---:|---:|---:|---:|
-| R1 | EQG primero (B→A) | 7 s | 0.8147 ± 0.0027 | 0.7923 ± 0.0029 | +0.0224 ± 0.0040 | 5.7 |
-| R2 | baseline primero (A→B) | 15 s | 0.8092 ± 0.0009 | 0.7713 ± 0.0010 | +0.0379 ± 0.0014 | 27.7 |
+| R1 | EQG first (B→A) | 7 s | 0.8147 ± 0.0027 | 0.7923 ± 0.0029 | +0.0224 ± 0.0040 | 5.7 |
+| R2 | Baseline first (A→B) | 15 s | 0.8092 ± 0.0009 | 0.7713 ± 0.0010 | +0.0379 ± 0.0014 | 27.7 |
 
-El signo positivo se mantuvo al invertir el orden de los brazos, lo que reduce —pero no elimina— el posible efecto de la deriva temporal del chip. Las instantáneas PRE/MID/POST atribuyen mejoras de estabilidad a MORPH y DD en estas corridas.
+The positive effect remained when the arm order was reversed. This reduces, but does not eliminate, the possible effect of chip drift over time. PRE/MID/POST snapshots attribute stability improvements to MORPH and DD in these runs.
 
-### Ablaciones de cuatro brazos: `ibm_marrakesh` e `ibm_kingston`
+### Four-arm ablations: `ibm_marrakesh` and `ibm_kingston`
 
-A = layout ingenuo; C = layout MORPH elegido por calibración; D = MORPH con DD forzado; E = EQG completo. El criterio preregistrado de cada ablación exige `z ≥ 2` y signo positivo en las cuatro repeticiones del experimento.
+A = naive layout; C = calibration-selected MORPH layout; D = MORPH with forced DD; E = full EQG. The preregistered criterion for each ablation requires `z ≥ 2` and a positive sign in all four experimental repetitions.
 
 | Backend | AR A | AR C | AR D | AR E |
 |---|---:|---:|---:|---:|
 | `ibm_marrakesh` | 0.7189 ± 0.0023 | 0.7925 ± 0.0020 | 0.7898 ± 0.0020 | 0.8126 ± 0.0019 |
 | `ibm_kingston` | 0.7700 ± 0.0019 | 0.8216 ± 0.0018 | 0.8150 ± 0.0019 | 0.8157 ± 0.0019 |
 
-| Backend | C−A: layout | D−C: DD aislado | E−C: reacción en vivo | E−A: stack completo |
+| Backend | C−A: layout | D−C: isolated DD | E−C: live response | E−A: full stack |
 |---|---:|---:|---:|---:|
-| `ibm_marrakesh` | +0.0736 (apoyado) | −0.0027 (no concluyente) | +0.0200 (apoyado) | +0.0937 (apoyado) |
-| `ibm_kingston` | +0.0516 (apoyado) | −0.0066 (signo opuesto) | −0.0059 (signo opuesto) | +0.0458 (apoyado) |
+| `ibm_marrakesh` | +0.0736 (supported) | −0.0027 (inconclusive) | +0.0200 (supported) | +0.0937 (supported) |
+| `ibm_kingston` | +0.0516 (supported) | −0.0066 (opposite sign) | −0.0059 (opposite sign) | +0.0458 (supported) |
 
-En ambas ablaciones, la selección de layout por calibración fue el aporte grande y consistente. DD y reacción en vivo variaron por dispositivo: no deben presentarse como beneficios universales. En `ibm_kingston`, una comparación de configuraciones idénticas varió alrededor de 0.006 AR; el propio informe advierte no interpretar efectos de ese tamaño como concluyentes.
+In both ablations, calibration-based layout selection was the large, consistent contribution. DD and live response varied by device and should not be presented as universal benefits. On `ibm_kingston`, an identical-configuration comparison varied by about 0.006 AR; the report itself cautions against treating effects of this size as conclusive.
 
-**Límites:** los informes cubren tres backends y una carga, con corridas de una sola jornada/ciclo de calibración; las cuatro repeticiones de las ablaciones no son una serie independiente entre días. PRE/MID/POST reduce, pero no elimina, la deriva. Hace falta replicar en más días, formalizar las ablaciones y probar otros backends/cargas antes de hacer afirmaciones generales.
+**Limitations:** The reports cover three backends and one workload, with runs from a single day/calibration cycle. The four ablation repetitions are not an independent multi-day series. PRE/MID/POST reduces drift but does not eliminate it. More days, formalized ablations, and tests on other backends and workloads are needed before making general claims.
 
-### Informes completos
+### Full reports
 
 - [Technical Validation Report — IBM Fez (PDF)](docs/eqg/reports/eqg-technical-validation-ibm-fez-2026-10-12.pdf)
 - [Validation and Cross-Hardware Reproducibility Plan (PDF)](docs/eqg/reports/eqg-cross-hardware-reproducibility-plan-2026-10-12.pdf)
 
-## Notebooks EQG
+## EQG notebooks
 
-Se conservaron los cuatro notebooks adjuntos tal como llegaron en `notebooks/eqg/`. Para ejecución, usa las copias revisadas en `notebooks/eqg/safe/`:
+The four submitted notebooks were preserved as received in `notebooks/eqg/`. For execution, use the reviewed copies in `notebooks/eqg/safe/`:
 
-| Notebook seguro | Experimento |
+| Safe notebook | Experiment |
 |---|---|
-| [QAOA Fez, 7 s, EQG primero](notebooks/eqg/safe/qaoa-ibm-fez-7s-eqg-first.ipynb) | Corrida A/B en orden B→A. |
-| [QAOA Fez, 15 s, baseline primero](notebooks/eqg/safe/qaoa-ibm-fez-15s-baseline-first.ipynb) | Réplica con orden A→B. |
-| [Ablación Marrakech, ABBA](notebooks/eqg/safe/ablation-ibm-marrakesh-abba.ipynb) | Cuatro brazos A/C/D/E. |
-| [Ablación Kingston, ABBA](notebooks/eqg/safe/ablation-ibm-kingston-abba.ipynb) | Cuatro brazos A/C/D/E. |
+| [QAOA Fez, 7 s, EQG first](notebooks/eqg/safe/qaoa-ibm-fez-7s-eqg-first.ipynb) | A/B run in B→A order. |
+| [QAOA Fez, 15 s, baseline first](notebooks/eqg/safe/qaoa-ibm-fez-15s-baseline-first.ipynb) | Replication in A→B order. |
+| [Marrakech ablation, ABBA](notebooks/eqg/safe/ablation-ibm-marrakesh-abba.ipynb) | Four arms: A/C/D/E. |
+| [Kingston ablation, ABBA](notebooks/eqg/safe/ablation-ibm-kingston-abba.ipynb) | Four arms: A/C/D/E. |
 
-### Preparación y seguridad
+### Setup and security
 
 ```bash
 pip install -e ".[dev]"
 pytest -q
 ```
 
-Las copias seguras **no instalan paquetes automáticamente**. Prepara el entorno antes de abrirlas. Por defecto, `MODE = "sim"`; la simulación sirve para comprobar el flujo, **no es evidencia experimental**. No se ejecutaron estos notebooks al incorporarlos al repositorio.
+The safe copies **do not install packages automatically**. Prepare the environment before opening them. By default, `MODE = "sim"`; simulation checks the workflow but **is not experimental evidence**. These notebooks were not run when added to the repository.
 
-Para hardware, revisa backend, plan de shots y presupuesto y habilita ambos controles de la copia correspondiente:
+For hardware runs, review the backend, shot plan, and budget, then enable both controls in the relevant notebook:
 
-- Ablaciones ABBA: `MODE = "hardware"` y `CONFIRM_SPEND = True`.
-- Corridas A/B de Fez: `MODE = "hardware"` y `CONFIRM_HARDWARE_RUN = True`.
+- ABBA ablations: `MODE = "hardware"` and `CONFIRM_SPEND = True`.
+- Fez A/B runs: `MODE = "hardware"` and `CONFIRM_HARDWARE_RUN = True`.
 
-La conexión al QPU queda bloqueada mientras falte la confirmación. Configura el token IBM como secreto del entorno (por ejemplo, el secreto de Kaggle); **no lo pegues en el notebook ni en el repositorio**. Cola de espera y tiempo de cuenta QPU son conceptos distintos.
+QPU access remains blocked until confirmation is provided. Set the IBM token as an environment secret (for example, a Kaggle secret); **do not paste it into a notebook or commit it to the repository**. Queue wait time and QPU account time are different quantities.
 
-## Paquete `ddqpu` y validación existente
+## `ddqpu` package and existing validation
 
-La implementación de validación previa del repositorio está en `src/ddqpu/`:
+The repository's preflight validation implementation is in `src/ddqpu/`:
 
-- `circuits.py`: circuitos alineados a `dt`, espectadores y referencias de relevo.
-- `backend_utils.py`: ranking de qubits, layout, transpilación y estimación de tiempo.
-- `analysis.py`: mitigación de lectura, coherencia, ajustes y prueba de relevos.
-- `experiment.py`: orquestación y análisis experimental.
-- `plots.py`: figuras.
-- `sentinel.py`: Centinela — sondeo, bitácora, decisión y corrección de fase.
+- `circuits.py`: circuits aligned to `dt`, spectators, and relay references.
+- `backend_utils.py`: qubit ranking, layout, transpilation, and runtime estimation.
+- `analysis.py`: readout mitigation, coherence, fitting, and relay testing.
+- `experiment.py`: orchestration and experimental analysis.
+- `plots.py`: figures.
+- `sentinel.py`: Sentinel probing, logging, decisions, and phase correction.
 
-La versión 5.0.0 incluye medición de canal libre, CPMG/XY4, controles de relevo, modos `hardware`, `sim` y `reuse`, pruebas automatizadas y scripts de reanálisis. La documentación del módulo Centinela está en [docs/producto_centinela.md](docs/producto_centinela.md). Los notebooks previos del paquete están en `notebooks/`.
+Version 5.0.0 includes free-evolution, CPMG, and XY4 measurements; relay controls; `hardware`, `sim`, and `reuse` modes; automated tests; and reanalysis scripts. Sentinel documentation is in [docs/producto_centinela.md](docs/producto_centinela.md). Earlier package notebooks are in `notebooks/`.
 
-## Resultados de Centinela
+## Sentinel results
 
-El análisis documentado para `ibm_fez`, qubit q142, reporta dos estados de coherencia `T2*` (155 ± 5 μs y 40 ± 4 μs), extensión de coherencia con DD, reducción del exceso de desfase y una cota de transferencia a vecinos menor de 0.18% (95% superior). Consulta el [informe de Centinela](docs/producto_centinela.md) y los archivos de `results/` para contexto, método y límites.
+The documented analysis for `ibm_fez`, qubit q142, reports two coherence states (`T2*` of 155 ± 5 µs and 40 ± 4 µs), coherence extension under DD, reduced excess dephasing, and a neighboring-qubit transfer upper bound below 0.18% (95% upper bound). See the [Sentinel report](docs/producto_centinela.md) and files in `results/` for context, methods, and limitations.
 
-## Estructura del repositorio
+## Repository structure
 
 ```text
-src/ddqpu/       Paquete de validación DD/Centinela
-notebooks/       Notebooks existentes del paquete
-notebooks/eqg/   Notebooks EQG originales recibidos
-notebooks/eqg/safe/ Copias EQG con modo sim y bloqueo explícito de QPU
-docs/eqg/reports/ Informes EQG y plan de reproducibilidad
-results/          Resultados procesados y figuras
-evidence/ibm_jobs/ Evidencia de jobs de IBM Quantum
- tests/          Suite pytest
- tools/          Herramientas para regenerar notebooks
+src/ddqpu/          DD/Sentinel validation package
+notebooks/          Existing package notebooks
+notebooks/eqg/      Original submitted EQG notebooks
+notebooks/eqg/safe/ EQG copies with simulation mode and explicit QPU lock
+docs/eqg/reports/   EQG reports and reproducibility plan
+results/            Processed results and figures
+evidence/ibm_jobs/  IBM Quantum job evidence
+tests/              pytest suite
+tools/              Notebook regeneration tools
 ```
 
-## Datos y atribución
+## Data and attribution
 
-Los archivos de `evidence/ibm_jobs/` contienen resultados obtenidos en hardware de IBM Quantum y se conservan para reproducibilidad científica. Su uso sigue sujeto a los términos y políticas de IBM Quantum; el proyecto no está afiliado ni respaldado por IBM. Las exportaciones de analítica de uso con IBMid, correo, identificadores de cuenta o CRN se mantienen fuera del control de versiones. El campo `user_id` se eliminó de la evidencia incluida.
+Files in `evidence/ibm_jobs/` contain results obtained on IBM Quantum hardware and are retained for scientific reproducibility. Their use remains subject to IBM Quantum terms and policies; the project is not affiliated with or endorsed by IBM. IBMid, email, account identifiers, or CRNs in usage analytics exports are kept out of version control. The `user_id` field was removed from the included evidence.
 
-Qiskit conserva su licencia Apache-2.0 y las dependencias mantienen sus licencias propias.
+Qiskit is licensed under Apache-2.0, and dependencies retain their own licenses.
 
-## Licencia y copyright
+## License and copyright
 
 Copyright (c) 2026 **Arturo Salvador Balderas Hernández**.
 
-El contenido original de primera parte de este repositorio —código, documentación, notebooks, informes y resultados— se distribuye bajo **Elastic License 2.0 (ELv2)**. Consulta [`LICENSE`](LICENSE) y el [alcance y las excepciones](docs/licensing-scope.md). Los componentes, datos y materiales de terceros conservan sus propios términos. ELv2 restringe ofrecer el software como servicio hosted/managed con acceso a una parte sustancial de sus funciones; revisa el [texto de la licencia](https://www.elastic.co/licensing/elastic-license) antes de desplegarlo así. Las licencias de versiones o copias distribuidas anteriormente no se cambian retroactivamente.
+The first-party original content in this repository—including code, documentation, notebooks, reports, and results—is distributed under the **Elastic License 2.0 (ELv2)**. See [`LICENSE`](LICENSE) and the [licensing scope and exceptions](docs/licensing-scope.md). Third-party components, data, and materials retain their own terms. ELv2 restricts offering the software as a hosted or managed service that provides access to a substantial portion of its functionality; review the [license text](https://www.elastic.co/licensing/elastic-license) before deploying it that way. The terms of previously distributed versions or copies are not changed retroactively.
 
-## Citación
+## Citation
 
-Si utilizas el código o los resultados en un trabajo académico o técnico, se agradece citar el repositorio y al autor. Para interpretar los hallazgos, conserva también el protocolo, los identificadores de jobs y los límites descritos en los informes.
+If you use the code or results in academic or technical work, please cite the repository and its author. To interpret the findings, also retain the protocol, job identifiers, and limitations described in the reports.
 
+## Running the full EQG pipeline (not only DD-QPU)
 
-## Ejecución del EQG completo (no solo DD-QPU)
+The `main.py` entry point reproduces the four-arm ablation workflow from the EQG notebook: A (naive layout), C (calibration-based MORPH), D (MORPH + forced DD), and E (full adaptive EQG). It integrates Eyes/AOM, Reflexes/MORPH, causal Judgment, Hands/DD, a QAOA MaxCut workload (`N=8`, `p=2`), PRE/POST snapshots, budget limits, and preregistered contrasts.
 
-El punto de entrada main.py reproduce el flujo de ablación de cuatro brazos del notebook EQG: A (layout ingenuo), C (MORPH por calibración), D (MORPH + DD forzado) y E (EQG adaptativo completo). Integra Ojos/AOM, Reflejos/MORPH, Juicio causal, Manos/DD, carga QAOA MaxCut (N=8, p=2), snapshots PRE/POST, límites de presupuesto y contrastes preregistrados.
-
-### Simulación local en Docker
+### Local simulation with Docker
 
 ```bash
-docker build -t eqg-centinela:latest .
-docker run --rm -v "$PWD/outputs:/app/outputs" eqg-centinela:latest \
+docker build -t eqg-sentinel:latest .
+docker run --rm -v "$PWD/outputs:/app/outputs" eqg-sentinel:latest \
   --mode sim --smoke --output-dir /app/outputs/eqg_ablation
 ```
 
-El smoke test reduce shots y repeticiones, pero conserva los cuatro brazos y genera report.json, ablation.png y run_manifest.json. GitHub Actions construye la imagen y comprueba los cinco contrastes C-A, D-C, E-C, E-D y E-A.
+The smoke test reduces shots and repetitions while retaining all four arms. It generates `report.json`, `ablation.png`, and `run_manifest.json`. GitHub Actions builds the image and checks the five contrasts: C−A, D−C, E−C, E−D, and E−A.
 
-### Conexión al catálogo IBM Quantum
+### Connecting to the IBM Quantum catalog
 
 ```bash
 export IBM_QUANTUM_TOKEN="..."
-docker run --rm --env IBM_QUANTUM_TOKEN eqg-centinela:latest --list-backends
+docker run --rm --env IBM_QUANTUM_TOKEN eqg-sentinel:latest --list-backends
 ```
 
-Para ejecutar el experimento en hardware, selecciona un backend disponible y confirma explícitamente el gasto de QPU:
+To run the experiment on hardware, select an available backend and explicitly confirm QPU spend:
 
 ```bash
-docker run --rm --env IBM_QUANTUM_TOKEN -v "$PWD/outputs:/app/outputs" eqg-centinela:latest \
+docker run --rm --env IBM_QUANTUM_TOKEN -v "$PWD/outputs:/app/outputs" eqg-sentinel:latest \
   --mode hardware --backend ibm_kingston --confirm-spend \
   --output-dir /app/outputs/eqg_ablation
 ```
 
-El token se lee del entorno y no se guarda en el repositorio ni en la imagen. La simulación es el modo predeterminado; no envía trabajos a IBM.
+The token is read from the environment and is not stored in the repository or image. Simulation is the default mode and does not submit jobs to IBM.
 
+## Flow guard and per-run private results
 
-## Guardián de flujo y resultados privados por corrida
+The `src/ddqpu/guard.py` module adapts the egress detector to the EQG state machine: preflight, authorization, execution, verification, and packaging. It rejects out-of-order events, nonce replays, unrelated owners or runs, unauthorized channels, and community publication that has not been enabled. Its audit log records hashes and metadata, never payloads or keys.
 
-El módulo src/ddqpu/guard.py adapta el detector de egress a la máquina de estados EQG: preflight, autorización, ejecución, verificación y empaquetado. Rechaza eventos fuera de secuencia, replay de nonces, propietarios o corridas ajenas, canales no autorizados y publicación comunitaria no habilitada. Su auditoría registra hashes y metadatos, nunca payloads ni claves.
+Full results and figures are encrypted as `report.eqg.enc` and `ablation.eqg.enc` using AES-256-GCM. Each run's random key is written to a separate file with private permissions; its path is displayed when the run completes. Store that file outside repositories and shared directories. To decrypt your own artifact:
 
-Los resultados completos y la figura se guardan cifrados como report.eqg.enc y ablation.eqg.enc mediante AES-256-GCM. La clave aleatoria de cada corrida se escribe en un archivo separado con permisos privados; la ruta aparece al terminar. Guarda ese archivo fuera de repositorios y directorios compartidos. Para descifrar un artefacto propio:
+```bash
+python -m ddqpu.privacy decrypt --input outputs/eqg_ablation/report.eqg.enc --key-file PATH/RUN_ID.key --output PRIVATE_PATH/report.json
+```
 
-    python -m ddqpu.privacy decrypt --input outputs/eqg_ablation/report.eqg.enc --key-file RUTA/RUN_ID.key --output RUTA_PRIVADA/report.json
-
-Cada clave está vinculada a un único run_id. La publicación comunitaria permanece deshabilitada. La etiqueta local del propietario no reemplaza una identidad autenticada: un despliegue multiusuario requiere integrar autenticación y entrega de claves con un servicio de identidad/KMS. El cifrado y el guardián no equivalen a un sello CSG; el manifiesto declara explícitamente que todavía no está firmado por CSG.
+Each key is bound to a single `run_id`. Community publication remains disabled. The local owner label does not replace an authenticated identity: a multi-user deployment must integrate authentication and key delivery with an identity/KMS service. Encryption and the guard are not equivalent to a CSG seal; the manifest explicitly states that it has not yet been CSG-signed.

@@ -11,6 +11,12 @@ COPY src/ ./src/
 COPY tests/ ./tests/
 COPY main.py ./main.py
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV LD_PRELOAD=libgomp.so.1
+
 RUN python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt \
     && python -m pip install --no-deps -e . \

@@ -1,7 +1,7 @@
-"""ddqpu: validacion de Dynamical Decoupling en QPU IBM con control de relevos."""
+"""Validate dynamical decoupling on IBM QPUs with relay control.
+
+Import modules explicitly (for example, ``ddqpu.circuits`` or
+``ddqpu.sentinel``) so helper tools do not load the full Qiskit stack
+when they only need independent utilities.
+"""
 __version__ = "5.0.0"
-from .circuits import *  # noqa
-from .analysis import *  # noqa
-from .backend_utils import *  # noqa
-from .experiment import *  # noqa
-from . import sentinel  # noqa

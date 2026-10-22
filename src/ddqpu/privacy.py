@@ -83,10 +83,10 @@ def create_run_key(run_id: str, owner_id: str, key_path: str | Path) -> dict[str
 def load_key_record(path: str | Path) -> tuple[dict[str, Any], bytes]:
     record = json.loads(Path(path).read_text(encoding="utf-8"))
     if record.get("schema_version") != KEY_SCHEMA:
-        raise ValueError("formato de clave EQG desconocido")
+        raise ValueError("Unknown EQG key format")
     key = base64.b64decode(record["key_b64"], validate=True)
     if len(key) != 32 or _key_id(key) != record.get("key_id"):
-        raise ValueError("clave EQG inválida o key_id incorrecto")
+        raise ValueError("Invalid EQG key or incorrect key_id")
     return record, key
 
 
@@ -94,7 +94,7 @@ def encrypt_artifact(
     plaintext: bytes, key_info: dict[str, Any], *, artifact_name: str
 ) -> bytes:
     if not isinstance(plaintext, bytes):
-        raise TypeError("plaintext debe ser bytes")
+        raise TypeError("plaintext must be bytes")
     run_id, owner_id, key = key_info["run_id"], key_info["owner_id"], key_info["key"]
     header = {
         "schema_version": SCHEMA,
@@ -128,9 +128,9 @@ def decrypt_artifact(
         raise ValueError("sobre EQG o algoritmo no reconocido")
     for field in ("run_id", "owner_id", "key_id"):
         if envelope.get(field) != key_record.get(field):
-            raise ValueError(f"la clave no está vinculada a este artefacto ({field})")
+            raise ValueError(f"The key is not bound to this artifact ({field})")
     if requester_id is not None and requester_id != key_record.get("owner_id"):
-        raise PermissionError("la identidad solicitante no coincide con el propietario de la corrida")
+            raise PermissionError("The requesting identity does not match the run owner")
     ciphertext = base64.b64decode(envelope["ciphertext_b64"], validate=True)
     if hashlib.sha256(ciphertext).hexdigest() != envelope.get("ciphertext_sha256"):
         raise ValueError("hash del ciphertext incorrecto")
@@ -161,12 +161,12 @@ def write_encrypted_artifact(
 
 
 def _cli() -> int:
-    parser = argparse.ArgumentParser(description="Descifra un artefacto privado de una única corrida EQG.")
+    parser = argparse.ArgumentParser(description="Decrypt a private artifact from a single EQG run.")
     sub = parser.add_subparsers(dest="command", required=True)
     dec = sub.add_parser("decrypt")
-    dec.add_argument("--input", required=True, help="Archivo .eqg.enc")
-    dec.add_argument("--key-file", required=True, help="Clave privada de esa corrida")
-    dec.add_argument("--output", required=True, help="Destino privado para el contenido descifrado")
+    dec.add_argument("--input", required=True, help=".eqg.enc file")
+    dec.add_argument("--key-file", required=True, help="Private key for that run")
+    dec.add_argument("--output", required=True, help="Private destination for decrypted content")
     args = parser.parse_args()
     if args.command == "decrypt":
         plaintext = decrypt_artifact(
@@ -181,7 +181,7 @@ def _cli() -> int:
             os.chmod(target, 0o600)
         except OSError:
             pass
-        print(f"Descifrado en ubicación privada: {target}")
+        print(f"Decrypted to private location: {target}")
         return 0
     return 2
 
