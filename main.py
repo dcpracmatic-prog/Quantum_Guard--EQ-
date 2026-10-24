@@ -15,7 +15,29 @@ _parser.add_argument("--confirm-spend", action="store_true")
 _parser.add_argument("--smoke", action="store_true", help="Run a quick local check with fewer shots.")
 _parser.add_argument("--output-dir", default="outputs/eqg_ablation")
 _parser.add_argument("--list-backends", action="store_true")
+_parser.add_argument(
+    "--product-engine-check", action="store_true",
+    help="Run the provider-free N=4 product-engine integration check and exit."
+)
 _args, _unknown = _parser.parse_known_args()
+
+if _args.product_engine_check:
+    # Integration check for the N=4 engine. No provider access or QPU usage.
+    from ddqpu.product_engine import (
+        select_morph_path, path_cut, approximation_ratio, evaluate_product,
+    )
+    _path = select_morph_path(
+        3, [0.8, 0.1, 0.2, 0.9], [(0, 1), (1, 2), (2, 3)]
+    )
+    assert _path == [0, 1, 2], "Unexpected MORPH path: %r" % (_path,)
+    assert path_cut("0101", 4) == 3
+    _ar, _se = approximation_ratio({"0101": 100}, 4)
+    assert abs(_ar - 1.0) < 1e-12 and abs(_se) < 1e-12
+    _verdict = evaluate_product(0.6927, 0.0061, 0.6387, 0.0061)
+    assert _verdict["veredicto"] == "PRODUCTO_OK", _verdict
+    _builtins.print("EQG_PRODUCT_ENGINE_CHECK_PASS")
+    _builtins.print({"morph_path": _path, "ar": _ar, "se": _se, "pilot_recalculation": _verdict})
+    _sys.exit(0)
 
 if _args.list_backends:
     _token = _os.getenv("IBM_QUANTUM_TOKEN") or _os.getenv("QISKIT_IBM_TOKEN")
