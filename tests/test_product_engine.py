@@ -9,7 +9,7 @@ class ProductEngineTests(unittest.TestCase):
     def test_morph_selects_low_friction_connected_path(self):
         self.assertEqual(
             select_morph_path(3, [0.8, 0.1, 0.2, 0.9], [(0, 1), (1, 2), (2, 3)]),
-            [1, 2, 3] if False else [0, 1, 2],
+            [0, 1, 2],
         )
 
     def test_cut_and_ratio(self):
