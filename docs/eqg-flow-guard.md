@@ -28,3 +28,8 @@ AES-GCM protects artifacts at rest and detects ciphertext tampering. The guard's
 ## Verification
 
 Run `pytest -q tests/test_flow_guard.py`. The suite checks state transitions, replay, reordering, incorrect owners, unauthorized public channels, egress budgets, artifact modification, per-run encryption/decryption, incorrect keys, and ciphertext tampering.
+
+
+## Boundary for the MORPH MVP runner
+
+The new MORPH CPU runner does not call FlowGuard during workload execution. FlowGuard remains part of the historical A/C/D/E pipeline. A future selectable preflight may use it as a security-control test and block startup on a detected anomaly; that result must be scoped to instrumented logical channels and must not be presented as universal eavesdropper detection. The current CPU runner's CSG preflight is separate: it verifies that the CSG signing/verification integration functions locally.

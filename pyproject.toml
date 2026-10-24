@@ -19,10 +19,12 @@ dependencies = [
     "scipy",
     "matplotlib",
     "cryptography>=42.0",
+    "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest", "qiskit-aer", "nbformat", "nbconvert", "ipykernel"]
+eqg-mvp = ["qiskit-aer", "PyYAML>=6.0"]
 
 [project.urls]
 Homepage = "https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-"

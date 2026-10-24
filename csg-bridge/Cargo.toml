@@ -1,0 +1,9 @@
+[package]
+name = "eqg-csg-bridge"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sello_integridad = { path = "../CSG/sello-integridad-rust" }
+serde_json = "1"
+hex = "0.4"
