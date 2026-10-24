@@ -29,9 +29,22 @@ jobs:
         run: docker build -t eqg-centinela:latest .
       - name: Verify Qiskit Aer can load in the container
         run: docker run --rm --entrypoint python eqg-centinela:latest -c 'from qiskit_aer import AerSimulator; print("Qiskit Aer import OK")'
-      - name: Run canonical MORPH MVP operational smoke on CPU
+      - name: Run canonical MORPH MVP operational smoke and CSG preflight on CPU
         run: |
-          docker run --rm --entrypoint python eqg-centinela:latest /app/scripts/run_eqg_mvp.py --config /app/config/eqg_mvp.yaml
+          mkdir -p outputs/eqg-mvp
+          docker run --rm -v "$GITHUB_WORKSPACE/outputs/eqg-mvp:/app/outputs" --entrypoint python eqg-centinela:latest /app/scripts/run_eqg_mvp.py --config /app/config/eqg_mvp.yaml
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("outputs/eqg-mvp/eqg_mvp_cpu_smoke.csg.json")
+          data=json.loads(p.read_text())
+          assert data["schema_version"] == "eqg.csg-attestation.v1"
+          assert data["verification"]["todo_valido"] is True
+          assert data["chain_verification"] and all(x["todo_valido"] for x in data["chain_verification"])
+          assert data["seal"]["aceptado"] is True
+          assert data["key_mode"] == "ephemeral_cpu_self_test"
+          print("EQG_CSG_SMOKE_PASS")
+          PY
       - name: Run complete regression and adversarial test suite
         run: |
           docker run --rm --entrypoint python eqg-centinela:latest -c '

@@ -10,3 +10,7 @@ ddqpu_run/
 outputs/
 *.key
 *.eqg.enc
+
+# Companion CSG checkout/build output (external repository)
+/CSG/
+/csg-bridge/target/

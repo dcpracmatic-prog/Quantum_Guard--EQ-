@@ -25,16 +25,17 @@ The recorded configuration is 4 logical qubits, QAOA depth `p=1`, and 2,048 shot
 
 ## Clone-and-run pre-production check
 
-The default pre-production runner is CPU-only and performs an **operational smoke test** of the canonical MORPH/QAOA path. It checks that the engine can select paths, construct/transpile the circuit, execute it in Qiskit Aer, score the output, and write a run record. It makes **no hardware performance claim**: the CPU smoke uses a clearly labeled synthetic topology fixture, not Kingston/Fez calibration data.
+The default pre-production runner is CPU-only and performs an **operational smoke test** of the canonical MORPH/QAOA path. It checks that the engine can select paths, construct/transpile the circuit, execute it in Qiskit Aer, score the output, and write a run record. The configured CSG complement also runs a signing-and-verification preflight, then signs the output record. CPU mode uses clearly labeled ephemeral keys for integration tests only; this is not a production identity, durable trust anchor, or hardware performance claim. The smoke uses a synthetic topology fixture, not Kingston/Fez calibration data.
 
 ```bash
 python -m pip install -e ".[eqg-mvp,dev]"
+# Rust/Cargo and Git are needed once to build the pinned CSG companion bridge.
 python scripts/run_eqg_mvp.py
 ```
 
 Configuration lives in [`config/eqg_mvp.yaml`](config/eqg_mvp.yaml). By default, `execution.mode: cpu`, `validation.workload_mvp: true`, and `validation.pytest: false`; the MVP operational smoke runs without requiring IBM credentials. Set `validation.pytest: true` to run the code test suite first, and `validation.verify_evidence: true` to check the saved report/summary pairs. These are separate checks. For a user workload, set `workload_mvp: false` and provide a repository-local Python file exposing `run(config)`.
 
-Hardware is opt-in only: set `execution.mode: hardware`, configure the instance through `IBM_QUANTUM_INSTANCE`, provide the secret in the environment variable named by `token_env`, and set `confirm_spend: true` after reviewing the budget. The runner refuses to submit without these gates. A CPU smoke confirms operational execution only; it cannot guarantee that a provider job will avoid queue, access, calibration, service, or hardware failures.
+Hardware is opt-in only: set `execution.mode: hardware`, configure the instance through `IBM_QUANTUM_INSTANCE`, provide the secret in the environment variable named by `token_env`, and set `confirm_spend: true` after reviewing the budget. The runner refuses to submit without these gates. When CSG is enabled for hardware, provision `EQG_CSG_SIGNER_KEY_HEX` and `EQG_CSG_NOTARY_KEY_HEX` from the user's secret manager, and configure/enroll the signer explicitly before production use. The bridge is pinned to the companion [CSG Rust crate](https://github.com/dcpracmatic-prog/CSG/tree/main/sello-integridad-rust); it is not vendored into EQG. Before a hardware submission, the CSG preflight checks the configured persistent notary and authorized signer; its signed preflight record is appended to the CSG chain. After execution, the CSG attestation signs the report bytes and includes the seal, public keys, and verification result; trust in notary identity/public keys must be anchored out of band. A CPU smoke confirms operational execution and the local CSG integration path only; it cannot guarantee provider, queue, access, calibration, service, hardware, or deployment security.
 
 ## What the evidence does and does not establish
 

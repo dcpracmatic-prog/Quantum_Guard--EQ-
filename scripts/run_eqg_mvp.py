@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run CPU operational smoke or explicitly authorized IBM hardware workload."""
 from __future__ import annotations
-import argparse, importlib.util, json, os, re, subprocess, sys
+import argparse, hashlib, importlib.util, json, os, re, subprocess, sys, uuid
 from pathlib import Path
 import numpy as np
 import yaml
@@ -21,6 +21,77 @@ def read_config(path):
     cfg=yaml.safe_load(Path(path).read_text(encoding='utf-8'))
     cfg.setdefault('validation',{}); cfg.setdefault('execution',{})
     return cfg
+
+
+def csg_binary(cfg):
+    configured=cfg.get('csg',{}).get('bridge_binary')
+    candidates=[Path(configured)] if configured else [Path('/usr/local/bin/eqg-csg-bridge'), ROOT/'csg-bridge/target/release/eqg-csg-bridge']
+    for candidate in candidates:
+        if candidate.is_file(): return candidate
+    cargo=__import__('shutil').which('cargo')
+    git=__import__('shutil').which('git')
+    if cargo and git and not configured:
+        result=subprocess.run([str(ROOT/'scripts/build_csg_bridge.sh')],cwd=ROOT)
+        if result.returncode == 0:
+            candidate=ROOT/'csg-bridge/target/release/eqg-csg-bridge'
+            if candidate.is_file(): return candidate
+    raise SystemExit('CSG enabled but bridge binary is unavailable. Install Rust/Cargo and Git so the pinned CSG companion crate can be built, or configure csg.bridge_binary.')
+
+
+def validate_csg_attestation(artifact, attestation, run_id):
+    payload=Path(artifact).read_bytes()
+    data=json.loads(Path(attestation).read_text(encoding='utf-8'))
+    if data.get('schema_version') != 'eqg.csg-attestation.v1' or data.get('run_id') != run_id:
+        raise ValueError('CSG attestation schema/run_id mismatch')
+    seal=data.get('seal',{})
+    if seal.get('evento_id') != f'eqg-{run_id}' or seal.get('aceptado') is not True:
+        raise ValueError('CSG seal missing, rejected, or bound to a different event')
+    if seal.get('hash_contenido') != hashlib.sha3_256(payload).hexdigest():
+        raise ValueError('CSG seal does not bind the exact artifact bytes')
+    if data.get('verification',{}).get('todo_valido') is not True:
+        raise ValueError('CSG independent signature/integrity verification did not pass')
+    chain=data.get('chain_verification')
+    if not isinstance(chain,list) or not chain or any(x.get('todo_valido') is not True for x in chain):
+        raise ValueError('CSG chain verification is absent or failed')
+    return data
+
+
+def csg_call(cfg, artifact, attestation, run_id, mode, *, enroll=False):
+    if not cfg.get('csg',{}).get('enabled',True): return None
+    binary=csg_binary(cfg)
+    cmd=[str(binary),str(artifact),str(attestation),str(run_id),mode]
+    if enroll: cmd.append('enroll')
+    env=os.environ.copy()
+    ccfg=cfg.get('csg',{})
+    env['EQG_CSG_PROJECT_ID']=str(ccfg.get('project_id','EQG-MVP'))
+    env['EQG_CSG_SIGNER_KEY_ENV']=str(ccfg.get('signer_key_env','EQG_CSG_SIGNER_KEY_HEX'))
+    env['EQG_CSG_NOTARY_KEY_ENV']=str(ccfg.get('notary_key_env','EQG_CSG_NOTARY_KEY_HEX'))
+    if cfg.get('csg',{}).get('state_dir'):
+        env['EQG_CSG_STATE_DIR']=str((ROOT/cfg['csg']['state_dir']).resolve())
+    result=subprocess.run(cmd,cwd=ROOT,env=env)
+    if result.returncode:
+        raise SystemExit(f'CSG attestation failed (exit {result.returncode}); refusing to report the run as fully validated.')
+    try:
+        validate_csg_attestation(artifact,attestation,run_id)
+    except Exception as exc:
+        raise SystemExit(f'CSG attestation validation failed; refusing to report the run as fully validated: {exc}') from exc
+    return attestation
+
+
+def csg_preflight(cfg, mode):
+    if not cfg.get('csg',{}).get('enabled',True): return
+    out=ROOT/'outputs'; out.mkdir(exist_ok=True)
+    nonce=uuid.uuid4().hex
+    payload=out/f'.eqg-csg-preflight-{nonce}.json'
+    seal=out/f'.eqg-csg-preflight-{nonce}.seal.json'
+    payload.write_text(json.dumps({'kind':'EQG_CSG_PREFLIGHT','nonce':nonce,'purpose':'operational integration check; no QPU data'}),encoding='utf-8')
+    key_mode='ephemeral_cpu_self_test' if mode=='cpu' else 'env_preflight'
+    enroll=bool(cfg.get('csg',{}).get('enroll_signer',False)) if mode != 'cpu' else False
+    try:
+        csg_call(cfg,payload,seal,'preflight-'+nonce,key_mode,enroll=enroll)
+        print('EQG_CSG_PREFLIGHT_PASS; no QPU submission occurred during this check.')
+    finally:
+        payload.unlink(missing_ok=True); seal.unlink(missing_ok=True)
 
 
 def run_cpu(cfg):
@@ -47,6 +118,8 @@ def run_cpu(cfg):
     payload={'mode':'cpu','status':'CPU_SMOKE_PASS','evidence_class':'operational_smoke_not_hardware_evidence','workload':'canonical_mvp_qaoa_maxcut_path','configuration':{'n_logical':n,'qaoa_p':p,'shots_per_layout':shots,'seed':seed},'fixture_note':fixture['fixture_type'],'morph_layout':results[0]['layout'],'reference_layout':results[1]['layout'],'simulated_ar':{'morph':results[0]['ar'],'reference':results[1]['ar'],'delta':delta,'z':z},'product_verdict':None}
     out=ROOT/'outputs'/'eqg_mvp_cpu_smoke.json'; out.parent.mkdir(exist_ok=True)
     out.write_text(json.dumps(payload,indent=2)+'\n',encoding='utf-8')
+    attestation=out.with_suffix('.csg.json')
+    csg_call(cfg,out,attestation,'cpu-smoke-'+str(seed),'ephemeral_cpu_self_test')
     print('EQG_MVP_CPU_OPERATIONAL_SMOKE_PASS')
     print('Mode: CPU only; no provider API/token/QPU used.')
     print('Synthetic fixture is for execution-path smoke only; simulated AR is NOT a performance/product verdict.')
@@ -85,7 +158,9 @@ def run_hardware(cfg):
     status,lower=verdict(delta,sed,z,delta_min=float(ex.get('delta_min',.02)),z_min=float(ex.get('z_min',2)),ic95_low_min=float(ex.get('ic95_low_min',.006)))
     payload={'mode':'hardware','backend':backend_name,'instance':instance,'job_id':job.job_id(),'n_logical':n,'qaoa_p':p,'shots_per_layout':shots,'morph_layout':eqg,'reference_layout':ref,'ar_morph':vals[0][0],'se_morph':vals[0][1],'ar_reference':vals[1][0],'se_reference':vals[1][1],'delta_ar':delta,'se_delta':sed,'z':z,'ic95_low':lower,'verdict':status,'evidence_class':'single hardware run; does not establish multi-day reproducibility'}
     out=ROOT/'outputs'/f'eqg_mvp_{backend_name}_{job.job_id()}.json'; out.parent.mkdir(exist_ok=True); out.write_text(json.dumps(payload,indent=2)+'\n')
-    print('Hardware run complete:',job.job_id(),status,'report:',out.relative_to(ROOT))
+    attestation=out.with_suffix('.csg.json')
+    csg_call(cfg,out,attestation,str(job.job_id()),'env',enroll=bool(cfg.get('csg',{}).get('enroll_signer',False)))
+    print('Hardware run complete:',job.job_id(),status,'report:',out.relative_to(ROOT),'CSG:',attestation.relative_to(ROOT))
 
 
 def main():
@@ -98,7 +173,9 @@ def main():
         r=subprocess.run([sys.executable,str(ROOT/'scripts/validate_product_evidence.py')],cwd=ROOT)
         if r.returncode: return r.returncode
     if v.get('workload_mvp',True):
-        if ex.get('mode','cpu')=='cpu': run_cpu(cfg)
+        mode=ex.get('mode','cpu')
+        if cfg.get('csg',{}).get('enabled',True): csg_preflight(cfg,mode)
+        if mode=='cpu': run_cpu(cfg)
         elif ex.get('mode')=='hardware': run_hardware(cfg)
         else: raise SystemExit('execution.mode must be cpu or hardware')
     else:

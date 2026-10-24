@@ -18,3 +18,16 @@ execution:
   delta_min: 0.02
   z_min: 2.0
   ic95_low_min: 0.006
+
+# CSG is a complementary integration, not bundled into EQG source. The bridge
+# calls the pinned Rust crate from github.com/dcpracmatic-prog/CSG.
+csg:
+  enabled: true
+  bridge_binary: null       # optional path; otherwise cargo builds the pinned bridge
+  project_id: EQG-MVP
+  cpu_key_mode: ephemeral_cpu_self_test  # test-only; never a durable identity
+  hardware_key_mode: env    # provision keys outside the repo / preferably via KMS
+  signer_key_env: EQG_CSG_SIGNER_KEY_HEX
+  notary_key_env: EQG_CSG_NOTARY_KEY_HEX
+  state_dir: outputs/csg-notary
+  enroll_signer: false      # true only for explicit operator bootstrap; otherwise signer must already be authorized
