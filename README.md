@@ -23,6 +23,19 @@ The recorded configuration is 4 logical qubits, QAOA depth `p=1`, and 2,048 shot
 - Fez: [report](report-5.json) · [summary](summary-3.txt) · [reviewed notebook](notebooks/eqg_product/ibm_fez.ipynb) · [original submitted notebook snapshot](kaggle.ipynb-21.txt)
 - [Validate that the report/summary pairs agree](scripts/validate_product_evidence.py)
 
+## Clone-and-run pre-production check
+
+The default pre-production runner is CPU-only and performs an **operational smoke test** of the canonical MORPH/QAOA path. It checks that the engine can select paths, construct/transpile the circuit, execute it in Qiskit Aer, score the output, and write a run record. It makes **no hardware performance claim**: the CPU smoke uses a clearly labeled synthetic topology fixture, not Kingston/Fez calibration data.
+
+```bash
+python -m pip install -e ".[eqg-mvp,dev]"
+python scripts/run_eqg_mvp.py
+```
+
+Configuration lives in [`config/eqg_mvp.yaml`](config/eqg_mvp.yaml). By default, `execution.mode: cpu`, `validation.workload_mvp: true`, and `validation.pytest: false`; the MVP operational smoke runs without requiring IBM credentials. Set `validation.pytest: true` to run the code test suite first, and `validation.verify_evidence: true` to check the saved report/summary pairs. These are separate checks. For a user workload, set `workload_mvp: false` and provide a repository-local Python file exposing `run(config)`.
+
+Hardware is opt-in only: set `execution.mode: hardware`, configure the instance through `IBM_QUANTUM_INSTANCE`, provide the secret in the environment variable named by `token_env`, and set `confirm_spend: true` after reviewing the budget. The runner refuses to submit without these gates. A CPU smoke confirms operational execution only; it cannot guarantee that a provider job will avoid queue, access, calibration, service, or hardware failures.
+
 ## What the evidence does and does not establish
 
 These are **two positive hardware runs**, one on each named backend, under one small workload and one execution/calibration window per backend. Their z-scores use the notebooks' shot-noise standard errors for each arm. They do not estimate day-to-day or calibration-to-calibration variability, and they do not establish a universal improvement, independent multi-day replication, production readiness, or security certification.

@@ -29,6 +29,9 @@ jobs:
         run: docker build -t eqg-centinela:latest .
       - name: Verify Qiskit Aer can load in the container
         run: docker run --rm --entrypoint python eqg-centinela:latest -c 'from qiskit_aer import AerSimulator; print("Qiskit Aer import OK")'
+      - name: Run canonical MORPH MVP operational smoke on CPU
+        run: |
+          docker run --rm --entrypoint python eqg-centinela:latest /app/scripts/run_eqg_mvp.py --config /app/config/eqg_mvp.yaml
       - name: Run complete regression and adversarial test suite
         run: |
           docker run --rm --entrypoint python eqg-centinela:latest -c '

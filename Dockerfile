@@ -9,6 +9,8 @@ WORKDIR /app
 COPY requirements.txt pyproject.toml README.md ./
 COPY src/ ./src/
 COPY tests/ ./tests/
+COPY scripts/ ./scripts/
+COPY config/ ./config/
 COPY main.py ./main.py
 
 RUN apt-get update \

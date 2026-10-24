@@ -1,0 +1,20 @@
+# Pre-production runner. CPU is an operational smoke test, not evidence of hardware advantage.
+validation:
+  pytest: false                # Optional verification suite; workload smoke still runs.
+  verify_evidence: false       # Set true to audit preserved Kingston/Fez reports.
+  workload_mvp: true           # Use the canonical MORPH + QAOA MaxCut workload.
+  user_workload: null          # Required when workload_mvp is false; Python module path.
+
+execution:
+  mode: cpu                    # cpu by default; hardware must be explicitly configured.
+  backend: ibm_kingston
+  instance: ${IBM_QUANTUM_INSTANCE}
+  token_env: IBM_QUANTUM_TOKEN
+  confirm_spend: false         # Must be true for hardware submission.
+  shots: 2048
+  seed: 20261024
+  n_logical: 4
+  qaoa_p: 1
+  delta_min: 0.02
+  z_min: 2.0
+  ic95_low_min: 0.006

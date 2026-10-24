@@ -44,3 +44,8 @@ The earlier `ddqpu` package, Sentinel probe, DD/coherence studies, and `main.py`
 ## Public-distribution review gate
 
 The repository is public while the two PDFs under `docs/eqg/reports/` are marked “Confidential.” This PR preserves them to avoid deleting research records. The repository owner should confirm distribution rights or move those documents to appropriately restricted storage before public release. This is not a technical finding about EQG.
+
+
+## Pre-production execution contract
+
+`config/eqg_mvp.yaml` separates validation choices from execution mode. The default is an operational CPU smoke of the canonical MVP workload; optional `validation.pytest` runs unit tests, while optional `validation.verify_evidence` checks the preserved hardware report/summary records. CPU smoke is not performance evidence: it uses a clearly disclosed synthetic graph fixture and does not claim the Kingston/Fez advantage. Hardware requires explicit mode, IBM token and instance environment values, plus `confirm_spend: true`. A custom workload is selected by `workload_mvp: false` and must be a repository-local Python file exposing `run(config)`.
