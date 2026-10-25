@@ -28,8 +28,8 @@ def close(a: float, b: float, *, tol: float = 1e-10) -> bool:
 
 
 def validate(report_name: str, summary_name: str, backend: str, job_id: str) -> list[str]:
-    report = json.loads((ROOT / report_name).read_text(encoding="utf-8"))
-    summary = parse_summary(ROOT / summary_name)
+    report = json.loads((ROOT / "evidence" / "product_mvp" / report_name).read_text(encoding="utf-8"))
+    summary = parse_summary(ROOT / "evidence" / "product_mvp" / summary_name)
     errors = []
     if report.get("backend") != backend:
         errors.append(f"{report_name}: backend mismatch")

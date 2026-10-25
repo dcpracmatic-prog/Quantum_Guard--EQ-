@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-The current MVP evidenced by `report-4.json` and `report-5.json` is a small, hardware-aware QAOA path-selection loop:
+The current MVP evidenced by `evidence/product_mvp/report-4.json` and `evidence/product_mvp/report-5.json` is a small, hardware-aware QAOA path-selection loop:
 
 1. Read backend calibration properties (readout error and X-gate error).
 2. Convert them to a per-qubit friction proxy: `min(1, 6 × readout_error + 60 × X_error)`.
@@ -16,10 +16,10 @@ The product actuator in these runs is **MORPH layout selection**. The runs expli
 
 | File pair | Backend | Job ID | MORPH AR ± SE | Reference AR ± SE | ΔAR ± SE | z | 95% lower bound | Verdict |
 |---|---|---|---:|---:|---:|---:|---:|---|
-| `report-4.json` + `summary-2.txt` | `ibm_kingston` | `dbe6il7gdj9s73fl9o40` | 0.698079 ± 0.006039 | 0.602539 ± 0.006073 | +0.095540 ± 0.008565 | 11.155 | +0.078754 | `PRODUCTO_OK` |
-| `report-5.json` + `summary-3.txt` | `ibm_fez` | `dbe6r97sstms73fbj220` | 0.692708 ± 0.006111 | 0.638672 ± 0.006115 | +0.054036 ± 0.008645 | 6.251 | +0.037093 | `PRODUCTO_OK` |
+| `evidence/product_mvp/report-4.json` + `evidence/product_mvp/summary-2.txt` | `ibm_kingston` | `dbe6il7gdj9s73fl9o40` | 0.698079 ± 0.006039 | 0.602539 ± 0.006073 | +0.095540 ± 0.008565 | 11.155 | +0.078754 | `PRODUCTO_OK` |
+| `evidence/product_mvp/report-5.json` + `evidence/product_mvp/summary-3.txt` | `ibm_fez` | `dbe6r97sstms73fbj220` | 0.692708 ± 0.006111 | 0.638672 ± 0.006115 | +0.054036 ± 0.008645 | 6.251 | +0.037093 | `PRODUCTO_OK` |
 
-Both records report `n_logical=4`, `qaoa_p=1`, `shots=2048`, `observe_source=backend_props`, and `char_job_id=null`. They meet the stored thresholds ΔAR ≥ 0.02, z ≥ 2, and lower bound > 0.006. `scripts/validate_product_evidence.py` checks report-summary identity and arithmetic consistency without rewriting the source files.
+Both records report `n_logical=4`, `qaoa_p=1`, `shots=2048`, `observe_source=backend_props`, and `char_job_id=null`. They meet the stored thresholds ΔAR ≥ 0.02, z ≥ 2, and lower bound > 0.006. `scripts/validate_product_evidence.py` checks the preserved files in `evidence/product_mvp/` for report-summary identity and arithmetic consistency without rewriting the source files.
 
 ## Comparison definition
 
@@ -33,7 +33,7 @@ The notebooks calculate arm-level uncertainty from shot counts and combine the t
 
 ## Provenance and known notebook hygiene
 
-The submitted files `kaggle.ipynb-20.txt` and `kaggle.ipynb-21.txt` are retained unchanged as run snapshots. Their saved outputs contain the respective Kingston and Fez job evidence. They also contain metadata inconsistencies that should not be copied into future reports: the Fez notebook inherits the Kingston product version/output directory and Kingston runtime-estimate annotation, while both notebooks' fingerprint omits backend identity. The reviewed copies under `notebooks/eqg_product/` correct those labels, include backend in the fingerprint, clear stale execution outputs, and default to no QPU submission. They preserve the algorithm and thresholds; the original reports and summaries remain untouched.
+The submitted files `evidence/product_mvp/kaggle.ipynb-20.txt` and `evidence/product_mvp/kaggle.ipynb-21.txt` are retained unchanged as run snapshots. Their saved outputs contain the respective Kingston and Fez job evidence. They also contain metadata inconsistencies that should not be copied into future reports: the Fez notebook inherits the Kingston product version/output directory and Kingston runtime-estimate annotation, while both notebooks' fingerprint omits backend identity. The reviewed copies under `notebooks/eqg_product/` correct those labels, include backend in the fingerprint, clear stale execution outputs, and default to no QPU submission. They preserve the algorithm and thresholds; the original reports and summaries remain untouched.
 
 The reviewer notebooks are templates, not new experimental results. Their source changes have not been run against QPU hardware. The Fez timing estimate is explicitly left unset until a backend-specific planning value is supplied; do not reuse the Kingston estimate as a Fez measurement.
 

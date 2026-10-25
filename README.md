@@ -10,6 +10,8 @@ The MVP's demonstrated actuator in the two runs below is **physical layout selec
 
 ## Hardware results in the MVP evidence set
 
+Preserved source reports, summaries, and the submitted notebook snapshots are grouped under [`evidence/product_mvp/`](evidence/product_mvp/); they are unchanged from the original artifacts.
+
 Both records are single-job, paired comparisons: the same QAOA circuit parameters and shot count were executed with a MORPH-selected path and a connected reference path. The reference is selected by the notebook's **maximum-friction connected-path heuristic**; it is not a neutral random or ordinary production baseline.
 
 | Backend | Job | MORPH AR | Reference AR | ΔAR (MORPH − reference) | z | 95% lower bound |
@@ -19,8 +21,8 @@ Both records are single-job, paired comparisons: the same QAOA circuit parameter
 
 The recorded configuration is 4 logical qubits, QAOA depth `p=1`, and 2,048 shots per layout. Both reports meet the recorded gate: ΔAR ≥ 0.02, z ≥ 2, and lower bound > 0.006. The scores and job identifiers below are preserved from the submitted run artifacts; see the [MVP evidence note](docs/eqg-product-mvp.md) for methods, exact source files, and interpretation limits.
 
-- Kingston: [report](report-4.json) · [summary](summary-2.txt) · [reviewed notebook](notebooks/eqg_product/ibm_kingston.ipynb) · [original submitted notebook snapshot](kaggle.ipynb-20.txt)
-- Fez: [report](report-5.json) · [summary](summary-3.txt) · [reviewed notebook](notebooks/eqg_product/ibm_fez.ipynb) · [original submitted notebook snapshot](kaggle.ipynb-21.txt)
+- Kingston: [report](evidence/product_mvp/report-4.json) · [summary](evidence/product_mvp/summary-2.txt) · [reviewed notebook](notebooks/eqg_product/ibm_kingston.ipynb) · [original submitted notebook snapshot](evidence/product_mvp/kaggle.ipynb-20.txt)
+- Fez: [report](evidence/product_mvp/report-5.json) · [summary](evidence/product_mvp/summary-3.txt) · [reviewed notebook](notebooks/eqg_product/ibm_fez.ipynb) · [original submitted notebook snapshot](evidence/product_mvp/kaggle.ipynb-21.txt)
 - [Validate that the report/summary pairs agree](scripts/validate_product_evidence.py)
 
 ## Clone-and-run pre-production check
