@@ -1,3 +1,5 @@
+[![EQG full pipeline Docker smoke test](https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-/actions/workflows/docker-smoke.yml/badge.svg)](https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-/actions/workflows/docker-smoke.yml)
+
 # Edge Quantum Guard (EQG)
 
 **EQG MVP — hardware-aware QAOA layout selection with MORPH.**
