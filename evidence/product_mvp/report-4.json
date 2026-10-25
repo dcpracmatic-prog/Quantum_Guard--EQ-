@@ -1,0 +1,41 @@
+{
+  "version": "EQG-product-kingston-1.0",
+  "fingerprint": "ecc37dac5cc672f6",
+  "backend": "ibm_kingston",
+  "job_id": "dbe6il7gdj9s73fl9o40",
+  "observe_source": "backend_props",
+  "char_job_id": null,
+  "n_logical": 4,
+  "qaoa_p": 1,
+  "shots": 2048,
+  "layout_EQG": [
+    129,
+    118,
+    109,
+    110
+  ],
+  "layout_REF": [
+    120,
+    121,
+    116,
+    101
+  ],
+  "mean_fr_EQG": 0.043586247679758064,
+  "mean_fr_REF": 0.5855763142483448,
+  "AR_EQG": 0.6980794270833334,
+  "se_EQG": 0.006039293221377153,
+  "AR_REF": 0.6025390625,
+  "se_REF": 0.006072951188324683,
+  "delta_AR": 0.09554036458333337,
+  "se_delta": 0.008564683225288966,
+  "z": 11.155154495525421,
+  "ic95_low": 0.078753585461767,
+  "veredicto": "PRODUCTO_OK",
+  "contract": {
+    "DELTA_MIN": 0.02,
+    "Z_MIN": 2.0,
+    "IC95_LOW_MIN": 0.006
+  },
+  "wall_s": 48.714213132858276,
+  "note": "Producto \u00fanico EQG: MORPH layout vs ref. Sin DD. Sin ley E1."
+}

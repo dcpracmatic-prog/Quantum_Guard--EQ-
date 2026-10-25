@@ -1,0 +1,58 @@
+# EQG MORPH MVP: scope, evidence, and interpretation
+
+## Product boundary
+
+The current MVP evidenced by `evidence/product_mvp/report-4.json` and `evidence/product_mvp/report-5.json` is a small, hardware-aware QAOA path-selection loop:
+
+1. Read backend calibration properties (readout error and X-gate error).
+2. Convert them to a per-qubit friction proxy: `min(1, 6 × readout_error + 60 × X_error)`.
+3. Search connected physical paths of four qubits and select the path with the lowest mean friction (MORPH).
+4. Transpile and run the same seeded QAOA MaxCut circuit using the MORPH path and a connected high-friction reference path.
+5. Compute approximation ratio (AR), shot-noise standard errors, ΔAR, z, a normal-approximation 95% lower bound, and the recorded contract verdict.
+
+The product actuator in these runs is **MORPH layout selection**. The runs explicitly report “Sin DD. Sin ley E1.” Do not describe these two records as tests of DD, E1/E1rev, Sentinel-guided decision-making, causal attribution, or the full adaptive A/C/D/E stack.
+
+## Preserved hardware evidence
+
+| File pair | Backend | Job ID | MORPH AR ± SE | Reference AR ± SE | ΔAR ± SE | z | 95% lower bound | Verdict |
+|---|---|---|---:|---:|---:|---:|---:|---|
+| `evidence/product_mvp/report-4.json` + `evidence/product_mvp/summary-2.txt` | `ibm_kingston` | `dbe6il7gdj9s73fl9o40` | 0.698079 ± 0.006039 | 0.602539 ± 0.006073 | +0.095540 ± 0.008565 | 11.155 | +0.078754 | `PRODUCTO_OK` |
+| `evidence/product_mvp/report-5.json` + `evidence/product_mvp/summary-3.txt` | `ibm_fez` | `dbe6r97sstms73fbj220` | 0.692708 ± 0.006111 | 0.638672 ± 0.006115 | +0.054036 ± 0.008645 | 6.251 | +0.037093 | `PRODUCTO_OK` |
+
+Both records report `n_logical=4`, `qaoa_p=1`, `shots=2048`, `observe_source=backend_props`, and `char_job_id=null`. They meet the stored thresholds ΔAR ≥ 0.02, z ≥ 2, and lower bound > 0.006. `scripts/validate_product_evidence.py` checks the preserved files in `evidence/product_mvp/` for report-summary identity and arithmetic consistency without rewriting the source files.
+
+## Comparison definition
+
+The reference is not “naive” without qualification. The notebooks construct it using the same physical coupling graph, searching connected paths and maximizing the mean of the same friction proxy. The search stops after at most 400 paths are found, so the selected result is the best among the enumerated paths, not a proven global maximum over all paths. If the MORPH and reference paths coincide, the notebook falls back to `[0, ..., N-1]`, which may not be a connected path on every backend; this fallback is a condition to validate before treating the notebook as a general runner.
+
+Therefore, report the result as **MORPH-selected low-friction path versus the notebook's high-friction connected-path reference heuristic**. This is a useful internal contrast, but it is not the same as comparison to a randomly selected layout or a prespecified operational baseline.
+
+## Statistical scope
+
+The notebooks calculate arm-level uncertainty from shot counts and combine the two standard errors as if the arm estimates were independent. They report `z = ΔAR / SEΔ` and `ΔAR − 1.96 × SEΔ`. Those calculations support the stated within-job, shot-noise contract. They do not include backend drift, calibration uncertainty, repeated-day variability, multiple-testing adjustment, or an independent replication distribution. The contract verdict is an operational threshold, not a general product certification or universal causal claim.
+
+## Provenance and known notebook hygiene
+
+The submitted files `evidence/product_mvp/kaggle.ipynb-20.txt` and `evidence/product_mvp/kaggle.ipynb-21.txt` are retained unchanged as run snapshots. Their saved outputs contain the respective Kingston and Fez job evidence. They also contain metadata inconsistencies that should not be copied into future reports: the Fez notebook inherits the Kingston product version/output directory and Kingston runtime-estimate annotation, while both notebooks' fingerprint omits backend identity. The reviewed copies under `notebooks/eqg_product/` correct those labels, include backend in the fingerprint, clear stale execution outputs, and default to no QPU submission. They preserve the algorithm and thresholds; the original reports and summaries remain untouched.
+
+The reviewer notebooks are templates, not new experimental results. Their source changes have not been run against QPU hardware. The Fez timing estimate is explicitly left unset until a backend-specific planning value is supplied; do not reuse the Kingston estimate as a Fez measurement.
+
+## Positioning in the wider repository
+
+The earlier `ddqpu` package, Sentinel probe, DD/coherence studies, and `main.py` A/C/D/E pipeline are retained research lines. Their documented results may motivate future product features, but they are not silently folded into the MVP evidence above. Present them under their own experimental scope and preserve their negative, mixed, or inconclusive findings.
+
+## Public-distribution review gate
+
+The repository is public while the two PDFs under `docs/eqg/reports/` are marked “Confidential.” This PR preserves them to avoid deleting research records. The repository owner should confirm distribution rights or move those documents to appropriately restricted storage before public release. This is not a technical finding about EQG.
+
+
+## Pre-production execution contract
+
+`config/eqg_mvp.yaml` separates validation choices from execution mode. The default is an operational CPU smoke of the canonical MVP workload; optional `validation.pytest` runs unit tests, while optional `validation.verify_evidence` checks the preserved hardware report/summary records. CPU smoke is not performance evidence: it uses a clearly disclosed synthetic graph fixture and does not claim the Kingston/Fez advantage. Hardware requires explicit mode, IBM token and instance environment values, plus `confirm_spend: true`. A custom workload is selected by `workload_mvp: false` and must be a repository-local Python file exposing `run(config)`.
+
+
+## Complementary CSG integration
+
+CSG is a separate companion project, not code owned by this EQG repository. `csg-bridge/` consumes the crate from the companion CSG repository at a pinned Git revision (it does not vendor or reclassify CSG as EQG code) and translates an EQG run artifact into the crate's signed `Evento` → `NotarioPersistente`/`Notario` seal → independent `verificar_sello` flow. The report bytes are the sealed content; the JSON sidecar stores the CSG seal, public keys, and verification record. The Docker build compiles the bridge and the CPU smoke exercises the CSG signing/verification path with throwaway keys only.
+
+Production mode requires operator-provisioned signer and notary secret values (`EQG_CSG_SIGNER_KEY_HEX`, `EQG_CSG_NOTARY_KEY_HEX`), a durable `EQG_CSG_STATE_DIR`, and prior signer authorization (or explicit `csg.enroll_signer: true` during a controlled bootstrap). In hardware mode the preflight checks the configured persistent notary/authorization before the QPU job; this preflight record is appended to that CSG chain. Never use the CPU ephemeral keys as a production identity. The bridge is an integration of the public Rust crate API, not a claim that CSG key custody is KMS/HSM-backed in this repository. Verification validates the signature against the carried public key; an independent trust anchor for the notary public key still must be provisioned out of band.
