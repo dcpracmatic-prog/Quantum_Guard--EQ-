@@ -21,5 +21,8 @@ run_eqg = "eqg.cli:main"
 package-dir = {"" = "src"}
 packages = ["eqg"]
 
+[tool.setuptools.package-data]
+eqg = ["default.yaml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

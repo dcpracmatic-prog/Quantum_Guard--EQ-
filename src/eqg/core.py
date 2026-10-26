@@ -81,10 +81,22 @@ def score(counts: Mapping[str, int], n: int) -> dict[str, float]:
             "standard_error": math.sqrt(max(0.0, second - mean * mean) / total) / (n - 1)}
 
 
+def _result_counts(result_item):
+    """Read counts from the first measured classical register, whatever its name."""
+    data = result_item.data
+    for name in data.keys():
+        register = getattr(data, name)
+        if hasattr(register, "get_counts"):
+            return {k: int(v) for k, v in register.get_counts().items()}
+    raise ValueError("workload result contains no measured classical register")
+
+
 def run(backend, circuit, shots: int, *, layout: Sequence[int] | None = None, tags: Sequence[str] | None = None) -> dict:
     """Transpile and execute one circuit on one backend; return job ID and score."""
     if shots < 1:
         raise ValueError("shots must be positive")
+    if circuit.num_qubits < 2:
+        raise ValueError("EQG scoring requires a workload with at least 2 qubits")
     from qiskit import transpile
     from qiskit_ibm_runtime import SamplerV2
     isa = transpile(circuit, backend, initial_layout=layout, optimization_level=1)
@@ -93,7 +105,7 @@ def run(backend, circuit, shots: int, *, layout: Sequence[int] | None = None, ta
         sampler.options.environment.job_tags = list(tags)
     job = sampler.run([(isa, None, shots)])
     result = job.result()
-    counts = {k: int(v) for k, v in result[0].data.c.get_counts().items()}
+    counts = _result_counts(result[0])
     n = circuit.num_qubits
     return {"job_id": job.job_id(), "backend": backend.name, "layout": list(layout) if layout is not None else None,
             "shots": shots, "counts": counts, "score": score(counts, n), "usage_seconds": job.usage()}
@@ -101,6 +113,10 @@ def run(backend, circuit, shots: int, *, layout: Sequence[int] | None = None, ta
 
 def validate(backend, circuit, shots: int, candidate_layout: Sequence[int], reference_layout: Sequence[int], *, thresholds: Mapping[str, float] | None = None) -> dict:
     """Compare selected and reference layouts, returning scores and a threshold verdict."""
+    if shots < 1:
+        raise ValueError("shots must be positive")
+    if circuit.num_qubits < 2:
+        raise ValueError("EQG scoring requires a workload with at least 2 qubits")
     if list(candidate_layout) == list(reference_layout):
         raise ValueError("candidate and reference layouts must differ")
     from qiskit import transpile
@@ -110,8 +126,8 @@ def validate(backend, circuit, shots: int, candidate_layout: Sequence[int], refe
     sampler = SamplerV2(mode=backend)
     job = sampler.run([(isa_a, None, shots), (isa_b, None, shots)])
     result = job.result()
-    a = score({k: int(v) for k, v in result[0].data.c.get_counts().items()}, circuit.num_qubits)
-    b = score({k: int(v) for k, v in result[1].data.c.get_counts().items()}, circuit.num_qubits)
+    a = score(_result_counts(result[0]), circuit.num_qubits)
+    b = score(_result_counts(result[1]), circuit.num_qubits)
     delta = a["approximation_ratio"] - b["approximation_ratio"]
     se = math.hypot(a["standard_error"], b["standard_error"])
     z = delta / se if se else float("inf")

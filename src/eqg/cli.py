@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+from importlib.resources import files
 import numpy as np
 import yaml
 from qiskit import QuantumCircuit
@@ -29,9 +30,11 @@ def _workload(n: int, depth: int, seed: int):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Select a calibrated layout and run one EQG workload")
-    parser.add_argument("--config", default=str(Path(__file__).resolve().parents[2] / "config/eqg.yaml"))
+    bundled_config = files("eqg").joinpath("default.yaml")
+    parser.add_argument("--config", default=None)
     args = parser.parse_args(argv)
-    cfg = yaml.safe_load(Path(args.config).read_text())
+    config_path = Path(args.config) if args.config else Path(str(bundled_config))
+    cfg = yaml.safe_load(config_path.read_text())
     ex = cfg["execution"]
     if not ex.get("confirm_spend", False):
         raise SystemExit("Hardware execution is disabled. Review usage and set execution.confirm_spend=true.")
@@ -45,6 +48,10 @@ def main(argv=None):
     service = QiskitRuntimeService(channel="ibm_quantum_platform", token=token, instance=instance)
     backend = service.backend(ex["backend"])
     n, shots = int(ex["qubits"]), int(ex["shots"])
+    if n < 2:
+        raise SystemExit("EQG workload needs at least 2 qubits for scoring; no job was submitted.")
+    if shots < 1:
+        raise SystemExit("shots must be positive; no job was submitted.")
     layout = select_layout(backend, n)
     circuit = _workload(n, int(ex["depth"]), int(ex["seed"]))
     validation = cfg.get("validation", {})
@@ -55,5 +62,6 @@ def main(argv=None):
         result = validate(backend, circuit, shots, layout, reference, thresholds=validation)
     else:
         result = run(backend, circuit, shots, layout=layout, tags=["eqg"])
-    print(json.dumps(result, indent=2, default=str))
-    return result
+    summary = {key: value for key, value in result.items() if key not in {"counts"}}
+    print(json.dumps(summary, indent=2, default=str))
+    return 0
