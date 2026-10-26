@@ -1,16 +1,12 @@
 __pycache__/
-*.pyc
-ddqpu_run/
-.ipynb_checkpoints/
+*.py[cod]
 *.egg-info/
 .pytest_cache/
-# IBM Quantum analytics exports can contain account/user identifiers and instance CRNs.
-**/ibm_usage_analytics/
-# EQG benchmark outputs and per-run decryption keys are private by default.
+.ipynb_checkpoints/
+.env
+.env.*
+!.env.example
 outputs/
 *.key
 *.eqg.enc
-
-# Companion CSG checkout/build output (external repository)
-/CSG/
-/csg-bridge/target/
+**/ibm_usage_analytics/
