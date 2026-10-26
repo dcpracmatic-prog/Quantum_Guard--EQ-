@@ -1,38 +1,61 @@
-# Edge Quantum Guard (EQG)
+# EQG
 
-EQG selects a connected physical-qubit layout using backend calibration, executes a quantum circuit and returns its measurement results. The included example evaluates QAOA MaxCut on a path graph.
+**Una carga cuántica. Un layout físico elegido con datos del backend. Un score para entender el resultado.**
 
-## Installation
+<p align="center">
+  <img src="assets/eqg-flow.svg" alt="Ilustración del flujo de EQG: calibración, selección de layout, ejecución, score y validación opcional" width="100%">
+</p>
+
+<details>
+<summary><strong>¿Qué está eligiendo EQG?</strong></summary>
+
+Un backend tiene cúbits físicos conectados entre sí y cada uno reporta características de calibración. EQG usa esa información para elegir un layout conectado para la carga, en lugar de asignar los cúbits lógicos sin considerar el estado físico reportado.
+
+La ilustración es explicativa: no representa una calibración ni una ejecución específica.
+
+</details>
+
+<details>
+<summary><strong>¿Qué pasa durante la ejecución?</strong></summary>
+
+EQG prepara el circuito para el backend y envía un trabajo. El proveedor ejecuta el circuito y devuelve mediciones; EQG calcula el score definido para la carga. El envío consume presupuesto del proveedor y puede esperar en cola.
+
+La validación es opcional: compara el layout seleccionado con un layout de referencia y produce un veredicto según los umbrales configurados.
+
+</details>
+
+## Instalar
 
 ```bash
 pip install .
 ```
 
-## Python API
+## Python
+
+Con un backend conectado y tu circuito preparado:
 
 ```python
 from eqg import select_layout, run
+
 layout = select_layout(backend, n=4)
 result = run(backend, circuit, shots=2048, layout=layout)
-print(result["job_id"], result["score"])
+print(result["score"])
 ```
 
-`run()` reports a MaxCut-path approximation ratio; use `result["counts"]` and your own objective for other workloads.
+El score incluido mide la razón de aproximación de MaxCut sobre un camino. Para otra función objetivo, usa las mediciones y calcula el score correspondiente.
 
-## CLI
+## Ejecutar desde la terminal
 
-Set `IBM_QUANTUM_TOKEN` and `IBM_QUANTUM_INSTANCE` in your environment. Copy `config/eqg.yaml`, select a backend and review the parameters. Hardware submission requires `execution.confirm_spend: true`.
+Configura `IBM_QUANTUM_TOKEN` e `IBM_QUANTUM_INSTANCE` en el entorno, revisa `config/eqg.yaml` y habilita explícitamente `execution.confirm_spend: true` solo después de revisar el consumo.
 
 ```bash
 run_eqg --config config/eqg.yaml
 ```
 
-Without `--config`, the installed command reads its bundled configuration, which disables hardware spending by default.
+## Alcance
 
-## Scope
+La selección es heurística y depende de la topología, la calibración disponible y la carga. EQG no garantiza una mejora universal ni elimina las colas del proveedor.
 
-Layout selection is heuristic (up to 400 connected paths). Performance depends on workload and calibration; EQG does not guarantee improvement over alternative layouts. The CLI's optional reference comparison requires an explicitly provided reference layout. QPU execution uses the customer's IBM credentials.
+## Licencia
 
-## License
-
-Elastic License 2.0. See `LICENSE`.
+Elastic License 2.0. Consulta `LICENSE`.
