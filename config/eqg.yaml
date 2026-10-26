@@ -1,0 +1,17 @@
+execution:
+  backend: ibm_kingston
+  instance_env: IBM_QUANTUM_INSTANCE
+  token_env: IBM_QUANTUM_TOKEN
+  qubits: 4
+  depth: 1
+  shots: 2048
+  seed: 20261025
+  confirm_spend: false
+workload:
+  kind: qaoa_path
+validation:
+  enabled: false
+  reference_layout: null
+  delta_min: 0.02
+  z_min: 2.0
+  lower_bound_min: 0.006

@@ -1,6 +1,0 @@
-{
-  "fixture_type": "operational-only synthetic backend graph; not hardware calibration or evidence",
-  "n_qubits": 4,
-  "friction": [0.40, 0.10, 0.20, 0.30],
-  "edges": [[0, 1], [1, 2], [2, 3]]
-}

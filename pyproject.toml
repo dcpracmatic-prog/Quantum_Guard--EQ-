@@ -3,35 +3,23 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ddqpu"
-version = "5.0.0"
-description = "IBM QPU dynamical decoupling validation with relay control and Sentinel"
+name = "eqg"
+version = "0.1.0"
+description = "Select a calibrated qubit layout, execute a workload, and score results."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Elastic License 2.0" }
-authors = [
-    { name = "Arturo Salvador Balderas Hernández" }
-]
-dependencies = [
-    "qiskit>=1.3",
-    "qiskit-ibm-runtime>=0.30",
-    "numpy",
-    "scipy",
-    "matplotlib",
-    "cryptography>=42.0",
-    "PyYAML>=6.0",
-]
+license = {file = "LICENSE"}
+dependencies = ["qiskit>=1.3", "qiskit-ibm-runtime>=0.40", "numpy>=1.26", "PyYAML>=6"]
 
 [project.optional-dependencies]
-dev = ["pytest", "qiskit-aer", "nbformat", "nbconvert", "ipykernel"]
-eqg-mvp = ["qiskit-aer", "PyYAML>=6.0"]
+dev = ["pytest>=8"]
 
-[project.urls]
-Homepage = "https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-"
-Repository = "https://github.com/dcpracmatic-prog/Quantum_Guard--EQ-"
+[project.scripts]
+run_eqg = "eqg.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["eqg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
