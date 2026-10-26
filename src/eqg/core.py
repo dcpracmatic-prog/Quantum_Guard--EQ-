@@ -70,6 +70,8 @@ def score(counts: Mapping[str, int], n: int) -> dict[str, float]:
     cuts, weights = [], []
     for key, value in counts.items():
         bits = str(key).replace(" ", "")[-n:].zfill(n)
+        if len(str(key).replace(" ", "")) != n or any(bit not in "01" for bit in bits):
+            raise ValueError("count keys must be binary strings of exactly n bits")
         cuts.append(sum(bits[i] != bits[i + 1] for i in range(n - 1)))
         weights.append(int(value))
     total = sum(weights)

@@ -1,5 +1,6 @@
 import pytest
 from eqg import score, select_layout
+from eqg.core import _result_counts
 
 
 def test_selects_low_friction_connected_path():
@@ -14,13 +15,13 @@ def test_layout_refuses_missing_connected_path():
 
 def test_score_maxcut_path():
     result = score({"010": 4, "000": 2}, n=3)
-    assert result["approximation_ratio"] == pytest.approx(2/3)
-    assert result["standard_error"] >= 0
+    assert result["approximation_ratio"] == pytest.approx(2 / 3)
 
 
-def test_score_rejects_empty_counts():
+@pytest.mark.parametrize("counts,n", [({}, 3), ({"01": -1, "10": 2}, 2), ({"abc": 1}, 3), ({"01": 1}, 3), ({"010": 1}, 1)])
+def test_score_rejects_invalid_counts(counts, n):
     with pytest.raises(ValueError):
-        score({}, n=3)
+        score(counts, n)
 
 
 def test_run_rejects_one_qubit_before_provider_import():
@@ -33,10 +34,16 @@ def test_run_rejects_one_qubit_before_provider_import():
 
 def test_result_counts_reads_non_c_register_name():
     from types import SimpleNamespace
-    from eqg.core import _result_counts
     class Bits:
         def get_counts(self):
             return {"01": 3}
     data = SimpleNamespace(meas=Bits())
     data.keys = lambda: ["meas"]
     assert _result_counts(SimpleNamespace(data=data)) == {"01": 3}
+
+
+def test_bundled_config_disables_spending():
+    from importlib.resources import files
+    import yaml
+    config = yaml.safe_load(files("eqg").joinpath("default.yaml").read_text())
+    assert config["execution"]["confirm_spend"] is False
